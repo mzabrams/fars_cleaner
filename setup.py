@@ -11,7 +11,7 @@ setuptools.setup(
     description="A python package for loading and preprocessing the FARS database",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="",
+    url="https://github.com/mzabrams/fars-cleaner",
     packages=setuptools.find_packages(),
     classifiers=(
         "Programming Language :: Python :: 3",
