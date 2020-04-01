@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="fars-cleaner",
+    name="fars_cleaner",
     version="1.0.0",
     author="Mitchell Abrams",
     author_email="mitchell.abrams@duke.edu",
