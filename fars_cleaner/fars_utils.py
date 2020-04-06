@@ -80,7 +80,6 @@ def createCaseID(df, yr):
     x['ID'] = x.apply((lambda a: int("{0}{1}".format(str(yr)[-2:], int(a.ST_CASE)))), axis=1, meta=(None, 'int64'))
     return x.copy()
 
-
 def getWeightedAvg(group, includeTotal = False, includeCounts=False):
     working = group
     working = working.assign(w = (working['R']/working['DeltaR'])**2)

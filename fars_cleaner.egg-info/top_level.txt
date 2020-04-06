@@ -1,1 +1,1 @@
-fars-cleaner
+fars_cleaner

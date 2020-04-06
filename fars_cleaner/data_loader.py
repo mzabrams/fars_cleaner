@@ -18,12 +18,11 @@ from builder import *
 from builder import get_renaming
 import extra_info as ei
 
-from fars_utils import createPerID
+from fars_cleaner.fars_utils import createPerID
 
-import datasets as ds
+from fars_cleaner import FARSFetcher
 
-
-def load_pipeline(
+def pipeline(
         start_year=1975,
         end_year=2018,
         first_run=True,
@@ -31,6 +30,7 @@ def load_pipeline(
         load_from=None,
         use_dask=False,
         client=None,
+        fetcher: FARSFetcher = None,
         **kwargs):
     """
 
@@ -55,30 +55,19 @@ def load_pipeline(
 
     """
 
-    data_dir = Path(__file__).resolve().parents[2] / "data" / "cache"
-
-    if target_folder:
-        fpath = Path(__file__).resolve().parents[2] / "data" / "processed" / target_folder
-    else:
-        target_folder = "test"
-        fpath = Path(__file__).resolve().parents[2] / "data" / "processed" / "test"
+    data_dir = fetcher.get_data_path()
 
     print("Loading mappings...")
 
-    mapper_file = Path(__file__).parent.resolve() / "mapping.dict"
-
-    if mapper_file.exists():
-        with open(mapper_file, 'rb') as f:
-            mappers = pickle.load(f)
-    else:
-        mappers = load_sheets(['Accident', 'Vehicle', 'Person'])
-        with open(mapper_file, 'wb') as f:
-            pickle.dump(mappers, f)
+    mappers = pickle.load(fetcher.fetch_mappers())
 
     print("Mappings loaded.")
     print("Loading data...")
 
-    ds.fetch_subset(start_year, end_year)
+    load_paths = fetcher.fetch_subset(start_year, end_year)
+
+    for year in load_paths:
+
 
     if first_run:
 
@@ -192,24 +181,24 @@ def load_pipeline(
                 .then(fix_mod_year)
                 .assign(PASSENGER_CAR=lambda x: ei.is_passenger_car(x),
                         LIGHT_TRUCK_OR_VAN=lambda x:
-                        ei.is_light_truck_or_van(x),
+                            ei.is_light_truck_or_van(x),
                         LARGE_TRUCK=lambda x: ei.is_large_truck(x),
                         MOTORCYCLE=lambda x: ei.is_motorcycle(x),
                         BUS=lambda x: ei.is_bus(x),
                         OTHER_UNKNOWN_VEHICLE=lambda x:
-                        ei.is_other_or_unknown(x),
+                            ei.is_other_or_unknown(x),
                         PASSENGER_VEHICLE=lambda x:
-                        ei.is_passenger_vehicle(x),
+                            ei.is_passenger_vehicle(x),
                         UTILITY_VEHICLE=lambda x:
-                        ei.is_utility_vehicle(x),
+                            ei.is_utility_vehicle(x),
                         PICKUP=lambda x: ei.is_pickup(x),
                         VAN=lambda x: ei.is_van(x),
                         MEDIUM_TRUCK=lambda x: ei.is_medium_truck(x),
                         HEAVY_TRUCK=lambda x: ei.is_heavy_truck(x),
                         COMBINATION_TRUCK=lambda x:
-                        ei.is_combination_truck(x),
+                            ei.is_combination_truck(x),
                         SINGLE_UNIT_TRUCK=lambda x:
-                        ei.is_single_unit_truck(x))
+                            ei.is_single_unit_truck(x))
                 .groupby(['YEAR'])
                 .apply(mapping, mappers=mappers['Vehicle'])
                 .droplevel(0)

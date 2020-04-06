@@ -1,11 +1,11 @@
 README.md
 setup.py
-fars-cleaner/__init__.py
-fars-cleaner/builder.py
-fars-cleaner/data_loader.py
-fars-cleaner/datasets.py
-fars-cleaner/extra_info.py
-fars-cleaner/fars_utils.py
+fars_cleaner/__init__.py
+fars_cleaner/builder.py
+fars_cleaner/data_loader.py
+fars_cleaner/datasets.py
+fars_cleaner/extra_info.py
+fars_cleaner/fars_utils.py
 fars_cleaner.egg-info/PKG-INFO
 fars_cleaner.egg-info/SOURCES.txt
 fars_cleaner.egg-info/dependency_links.txt

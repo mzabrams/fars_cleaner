@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: fars-cleaner
-Version: 1.0.0
+Version: 1.0.1
 Summary: A python package for loading and preprocessing the FARS database
 Home-page: https://github.com/mzabrams/fars-cleaner
 Author: Mitchell Abrams

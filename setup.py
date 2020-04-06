@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="fars_cleaner",
-    version="1.0.0",
+    version="1.0.1",
     author="Mitchell Abrams",
     author_email="mitchell.abrams@duke.edu",
     description="A python package for loading and preprocessing the FARS database",
@@ -13,6 +13,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/mzabrams/fars-cleaner",
     packages=setuptools.find_packages(),
+    install_requires=[
+        'pooch',
+    ],
     classifiers=(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
