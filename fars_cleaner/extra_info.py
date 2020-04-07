@@ -93,7 +93,7 @@ def functional_class(df):
     """Return roadway function class using NHTSA convention."""
     yr = df['YEAR']
     # if before 1981, return series of pd.NA
-    func = df['FUNCTION']
+    func = df['FUNC_SYS']
 
     conditions = [
         (func.isin([1, 11])),
@@ -127,8 +127,11 @@ def land_use(df):
     yr = df['YEAR']
 
     func1 = df['LAND_USE']
-    func2 = df['ROAD_FNC']
-    func3 = df['RUR_URB']
+    func2 = df['FUNC_SYS']
+    if 'RUR_URB' in df.columns:
+        func3 = df['RUR_URB']
+    else:
+        func3 = pd.Series(0, index=np.arange(len(func1)))
 
     conditions = [
         ((yr.between(1981, 1986) & (func1 == 2)) |
@@ -148,7 +151,7 @@ def interstate(df):
     """Return whether road is an interstate using NHTSA convention."""
     yr = df['YEAR']
     func = df['ROUTE'].where(yr.between(1975, 1980)).add(
-        df['ROAD_FNC'].where(yr.between(1981, 2014)), fill_value=0).add(
+        df['FUNC_SYS'].where(yr.between(1981, 2014)), fill_value=0).add(
         df['FUNC_SYS'].where((yr >= 2015)), fill_value=0)
 
     conditions = [
@@ -433,7 +436,10 @@ def helmet_use(df):
     """Return helmet usage, per NHTSA convention."""
     yr = df['YEAR']
     helmet = df['REST_USE']
-    rest_mis = df['REST_MIS']
+    if 'REST_MIS' in df.columns:
+        rest_mis = df['REST_MIS']
+    else:
+        rest_mis = pd.Series(pd.NA, index=df.index)
 
     conditions = [
         ((helmet.isin([0, 1, 2, 3, 4, 6, 10, 11, 12, 13, 14, 15, 17])) |
@@ -447,8 +453,9 @@ def helmet_use(df):
 def air_bag_deployed(df):
     """Return air bag deployment as True/False, or NA if unknown"""
     yr = df['YEAR']
-    air_bag = df['AUT_REST'].where(yr.between(1975, 1990)).add(
-        df['AIR_BAG'].where((yr >= 1991)), fill_value=0)
+    air_bag = df['AUT_REST'].where(yr.between(1975, 1990))
+    if 'AIR_BAG' in df.columns:
+        air_bag = air_bag.add(df['AIR_BAG'].where((yr >= 1991)), fill_value=0)
 
     conditions = [
         (((yr <= 1997) & (air_bag == 3)) |

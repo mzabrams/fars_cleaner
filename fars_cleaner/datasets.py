@@ -67,10 +67,10 @@ class FARSFetcher:
         unpack = pooch.Unzip()
 
         fnames = self.GOODBOY.registry_files
-        unzipped = []
+        unzipped = {}
         for fname in fnames:
             if self.GOODBOY.is_available(fname):
-                unzipped.append(self.GOODBOY.fetch(fname, processor=unpack))
+                unzipped[fname] = self.GOODBOY.fetch(fname, processor=unpack)
             else:
                 raise FileNotFoundError("File could not be found in FARS FTP directory.")
         return unzipped
@@ -79,9 +79,9 @@ class FARSFetcher:
         """
         Download a subset of the FARS dataset.
         """
-        unzipped = []
+        unzipped = {}
         for yr in range(start_yr, end_yr + 1):
-            unzipped.append(self.fetch_single(yr))
+            unzipped[yr] = self.fetch_single(yr)
         return unzipped
 
     def fetch_single(self, year):
@@ -95,7 +95,7 @@ class FARSFetcher:
         else:
             raise FileNotFoundError("File could not be found in FARS FTP directory.")
 
-        return unzipped
+        return {year: unzipped}
 
     def fetch_mappers(self):
         """
@@ -105,7 +105,7 @@ class FARSFetcher:
         -------
         Path to the mapper file
         """
-        return self.GOODBOY.fetch("mappers.dict")
+        return self.GOODBOY.fetch("mapping.dict")
 
     def get_data_path(self):
         return self.cache_path

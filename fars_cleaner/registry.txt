@@ -42,3 +42,4 @@
 2016 3f497297fbd80fc4d8696c99adf3dd31d2fd7295b8a9e8d69754784ec4458a21 https://www.nhtsa.gov/filebrowser/download/122001
 2017 3a28a24f3832c95063a4d2b91104113056c4ab4013c39741d29d7ed7df796489 https://www.nhtsa.gov/filebrowser/download/118801
 2018 a2767de0c04395f1e1c465ce499ff979ff3ab5bd4fc2683d317b7a99f664b64c https://www.nhtsa.gov/filebrowser/download/176791
+mapping.dict 86f883d3eb8ac80823052bac2f97e5c10fbeb92d4e6803613f11afe74e50b6f2 https://github.com/mzabrams/fars-cleaner/raw/master/fars_cleaner/mapping.dict

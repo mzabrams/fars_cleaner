@@ -8,7 +8,7 @@ Created on Mon Jan 27 10:07:15 2020
 import datetime
 
 import pandas as pd
-import extra_info as ei
+#import extra_info as ei
 
 from pathlib import Path
 

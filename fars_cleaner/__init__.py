@@ -1,3 +1,4 @@
 name = 'fars_cleaner'
-from .data_loader import pipeline
 from .datasets import FARSFetcher
+from .fars_processor import FARSProcessor
+#from .data_loader import pipeline
