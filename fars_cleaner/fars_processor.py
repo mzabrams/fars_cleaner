@@ -83,8 +83,11 @@ class FARSProcessor:
             vehicles.append(vehicle)
             accidents.append(accident)
         #self.accidents = pd.concat(accidents)
+        print("accidents")
         self.accidents = self.process_accidents(pd.concat(accidents))
+        print("people")
         self.people = self.process_people(pd.concat(people))
+        print("vehicles")
         self.vehicles = self.process_vehicles(pd.concat(vehicles))
 
     def year_mapper(self, mappers, year):
@@ -200,13 +203,6 @@ class FARSProcessor:
                 .groupby(['YEAR'])
                 .apply(self.mapping, mappers=self.mappers['Vehicle'])
                 .droplevel(0)
-                .encode_categorical(list(set(['STATE', 'HIT_RUN', 'MAKE', 'BODY_TYP',
-                                     'ROLLOVER', 'J_KNIFE', 'TOW_VEH', 'SPEC_USE', 'EMER_USE', 'IMPACT1',
-                                     'IMPACT2', 'DEFORMED', 'IMPACTS', 'TOWED', 'FIRE_EXP', 'VEH_CF1',
-                                     'VEH_CF2', 'M_HARM', 'WGTCD_TR', 'FUELCODE', 'DR_PRES', 'DR_DRINK',
-                                     'L_STATE', 'L_STATUS', 'L_RESTRI', 'DR_TRAIN', 'VIOL_CHG',
-                                     'DR_CF1', 'DR_CF2', 'DR_CF3', 'VINA_MOD', 'HAZ_CARG', 'VEH_MAN',
-                                     'L_COMPL', 'VIN_BT']) & set(vehicles.columns)))
                 .remove_empty()
         )
 
@@ -232,7 +228,13 @@ class FARSProcessor:
                     'DR_SF4': 'DR_CF4',
                 }))
 
-        return veh
+        return veh.encode_categorical(list(set(['STATE', 'HIT_RUN', 'MAKE', 'BODY_TYP',
+                                     'ROLLOVER', 'J_KNIFE', 'TOW_VEH', 'SPEC_USE', 'EMER_USE', 'IMPACT1',
+                                     'IMPACT2', 'DEFORMED', 'IMPACTS', 'TOWED', 'FIRE_EXP', 'VEH_CF1',
+                                     'VEH_CF2', 'M_HARM', 'WGTCD_TR', 'FUELCODE', 'DR_PRES', 'DR_DRINK',
+                                     'L_STATE', 'L_STATUS', 'L_RESTRI', 'DR_TRAIN', 'VIOL_CHG',
+                                     'DR_CF1', 'DR_CF2', 'DR_CF3', 'VINA_MOD', 'HAZ_CARG', 'VEH_MAN',
+                                     'L_COMPL', 'VIN_BT']) & set(veh.columns)))
 
     def process_people(self, people):
         per = (
