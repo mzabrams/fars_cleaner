@@ -16,11 +16,6 @@ from time import sleep
 
 NOW = datetime.datetime.now()
 
-def apply_mapping(mappers, df):
-
-    cols = df.columns
-    codes = mappers.keys()
-
 
 def decode_accident(group, mappers):
     """This should be applied with pd.GroupBy.apply, grouped on YEAR"""
@@ -81,12 +76,14 @@ def decode_vehicle(group, mappers):
     print(yr)
     return decoded.replace(cur_mappers)
 
+
 def get_renaming(mappers, year):
     """Get original to final column namings."""
     renamers = {}
     for code, attr in mappers.items():
         renamers[code] = attr['df_name']
     return renamers
+
 
 def year_mapper(mappers, year):
     # Take mapper for the data file
