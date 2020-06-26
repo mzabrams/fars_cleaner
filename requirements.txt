@@ -2,6 +2,6 @@ pandas
 numpy
 requests
 hypothesis
-janitor
+pyjanitor
 dask
 pooch
