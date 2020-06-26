@@ -47,7 +47,6 @@ def decode_accident(group, mappers):
 
     return decoded.replace(cur_mappers)
 
-
 def decode_vehicle(group, mappers):
     yr = group.name
     #print(yr, mappers)
