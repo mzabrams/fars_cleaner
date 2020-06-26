@@ -1,4 +1,7 @@
 pandas
 numpy
+requests
 hypothesis
+janitor
+dask
 pooch
