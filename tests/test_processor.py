@@ -190,4 +190,3 @@ def test_dayofweek_unknown(data):
         for d in ei.day_of_week(data):
             assert d == 'Unknown'
 
-def test_
