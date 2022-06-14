@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 
 import janitor
+from datetime import datetime
 
 
 def get_fips(df):
@@ -93,7 +94,7 @@ def functional_class(df):
     """Return roadway function class using NHTSA convention."""
     yr = df['YEAR']
     # if before 1981, return series of pd.NA
-    func = df['FUNC_SYS']
+    func = df['FUNCTION']
 
     conditions = [
         (func.isin([1, 11])),
@@ -151,7 +152,7 @@ def interstate(df):
     """Return whether road is an interstate using NHTSA convention."""
     yr = df['YEAR']
     func = df['ROUTE'].where(yr.between(1975, 1980)).add(
-        df['FUNC_SYS'].where(yr.between(1981, 2014)), fill_value=0).add(
+        df['ROAD_FNC'].where(yr.between(1981, 2014)), fill_value=0).add(
         df['FUNC_SYS'].where((yr >= 2015)), fill_value=0)
 
     conditions = [

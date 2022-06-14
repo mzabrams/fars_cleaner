@@ -11,6 +11,8 @@ class FARSFetcher:
                  cache_path=None,
                  registry=None,
                  project_dir=None,
+                 check_hash=True,
+                 show_progress=True,
                  ):
         """Class to download FARS data from the NHTSA FTP repository.
 
@@ -30,6 +32,12 @@ class FARSFetcher:
             Top level directory for your current project. If a path is provided, and `cache_path` is left as default,
             files will be downloaded to `project_dir/data/fars`. If `cache_path` is not the default, files will be
             downloaded to `project_dir/cache_path`.
+        check_hash: bool
+            Flag to enforce pooch download behavior. Defaults to True. When False, force download of FARS resources
+            regardless of hash mismatch against the local registry version. Useful for when the FARS
+            database is updated before the registry can be modified. Should normally be left to default (False).
+        show_progress: bool
+            Use pooch built-in feature to show progress bars during download. Default True.
         """
         if project_dir:
             self.project_dir = project_dir
@@ -51,10 +59,15 @@ class FARSFetcher:
             self.registry = Path(registry)
         else:
             self.registry = os.path.join(os.path.dirname(__file__), "registry.txt")
+
+        self.check_hash = check_hash
+        self.show_progress = show_progress
+
         self.GOODBOY = pooch.create(
             path=self.cache_path,
             base_url="https://www.nhtsa.gov/filebrowser/download/",
             registry=None,
+            allow_updates=self.check_hash,
         )
 
         self.GOODBOY.load_registry(self.registry)
@@ -64,13 +77,16 @@ class FARSFetcher:
         Download the entire FARS dataset, to cache folder.
         """
         # The file will be downloaded automatically the first time this is run.
-        unpack = pooch.Unzip()
 
         fnames = self.GOODBOY.registry_files
         unzipped = {}
+        
         for fname in fnames:
+            if "dict" in fname:
+                print(fname)
             if self.GOODBOY.is_available(fname):
-                unzipped[fname] = self.GOODBOY.fetch(fname, processor=unpack)
+                unpack = pooch.Unzip(extract_dir=f"./{fname}.unzip")
+                unzipped[fname] = self.GOODBOY.fetch(fname, processor=unpack, progressbar=self.show_progress)
             else:
                 raise FileNotFoundError("File could not be found in FARS FTP directory.")
         return unzipped
@@ -91,9 +107,9 @@ class FARSFetcher:
         # fname = f'{year}/National/FARS{year}NationalCSV.zip'
         fname = f'{year}'
         if self.GOODBOY.is_available(fname):
-            unzipped = self.GOODBOY.fetch(fname, processor=pooch.Unzip())
+            unzipped = self.GOODBOY.fetch(fname, processor=pooch.Unzip(), progressbar=self.show_progress)
         else:
-            raise FileNotFoundError("File could not be found in FARS FTP directory.")
+            raise FileNotFoundError(f"{fname}: File could not be found in FARS FTP directory.")
 
         return {year: unzipped}
 

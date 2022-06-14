@@ -9,7 +9,7 @@ across multiple years.
 '''
 import pandas as pd
 import numpy as np
-import requests
+import requests, json
 
 
 def get_vin_info(vin, s = requests.Session()):

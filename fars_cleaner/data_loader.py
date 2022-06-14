@@ -5,7 +5,7 @@ Created on Mon Feb 17 11:04:59 2020
 @author: Mitchell Abrams
 """
 
-
+# import duecredit
 import pandas as pd
 import dask.dataframe as dd
 import janitor
@@ -14,15 +14,16 @@ import pickle
 
 from pathlib import Path
 
-from builder import *
-from builder import get_renaming
-import extra_info as ei
+from .builder import *
+from .builder import get_renaming
+import fars_cleaner.extra_info as ei
 
 from fars_cleaner.fars_utils import createPerID
 
 from fars_cleaner import FARSFetcher
 
-def pipeline(
+
+def load_pipeline(
         start_year=1975,
         end_year=2018,
         first_run=True,
@@ -31,8 +32,12 @@ def pipeline(
         use_dask=False,
         client=None,
         fetcher: FARSFetcher = None,
+        debug=0,
         **kwargs):
-    """
+    """Load pipeline to load and process FARS data between `start_year` and `end_year.`
+
+    Loads FARS data from NHTSA database and pre-processes in an opinionated manner.
+    FARS data are preprocessed according to a preset mapping file.
 
 
     Parameters
@@ -44,30 +49,68 @@ def pipeline(
     first_run : bool, optional
         Flag to determine whether to process and write-out the required files, or whether the data can be loaded from
         disk pre-processed. The default is True.
+    target_folder : Path-like, optional
+        Path to target folder to save out pickled data after processing. If None, defaults to the cache directory
+        specified by the FARSFetcher.
+    load_from : Path-like, optional
+        Path to source folder to load processed data from. If `first_run` is true, this parameter is ignored.
     use_dask : bool, optional
         Flag to determine whether to parallelize using Dask. Supported, but not recommended at this time.
         The default is False.
     client : Dask Distributed Client, optional. Required if use_dask is True.
+    fetcher : FARSFetcher, optional
+        FARSFetcher instance to facilitate file download and cache management. Overrides `load_from` value.
+    debug : int, optional
+        Set verbosity level.
+        0 = No verbose output.
+        1 = Print basic progress messages.
+        2 = Print messages along with progress bars (provided by tqdm). NOT implemented yet.
 
     Returns
     -------
 
+    Raises
+    ------
+    ValueError
+        If `use_dask` is True and no client provided.
+        If `fetcher` and `load_from` are both not provided.
 
     """
 
-    data_dir = fetcher.get_data_path()
+    if use_dask and client is None:
+        raise ValueError("Must provide a client to use Dask.")
 
-    print("Loading mappings...")
+    if fetcher is None:
+        if load_from is None:
+            raise ValueError("Must provide one of fetcher or load_from to access data.")
+        else:
+            data_dir = Path(load_from)
+    else:
+        data_dir = fetcher.get_data_path()
 
-    mappers = pickle.load(fetcher.fetch_mappers())
+    if target_folder is None:
+        target_folder = data_dir
 
-    print("Mappings loaded.")
-    print("Loading data...")
+    if debug > 0:
+        print("Loading mappings...")
 
-    load_paths = fetcher.fetch_subset(start_year, end_year)
+    if fetcher:
+        mapper_file = Path(fetcher.fetch_mappers())
+    else:
+        mapper_file = data_dir / "mapping.dict"
 
-    for year in load_paths:
+    if mapper_file.exists():
+        with open(mapper_file, 'rb') as f:
+            mappers = pickle.load(f)
+    else:
+        raise FileNotFoundError("Mapping dictionary not found.")
 
+    if debug > 0:
+        print("Mappings loaded.")
+        print("Loading data...")
+
+    if fetcher:
+        fetcher.fetch_subset(start_year, end_year)
 
     if first_run:
 
@@ -84,22 +127,19 @@ def pipeline(
             vehicle['YEAR'] = year
             person['YEAR'] = year
 
-            if use_dask:
-                lazy_people.append(person)
-                lazy_vehicles.append(vehicle)
-                lazy_accidents.append(accident)
-            else:
-                lazy_people.append(person)
-                lazy_vehicles.append(vehicle)
-                lazy_accidents.append(accident)
+            lazy_people.append(person)
+            lazy_vehicles.append(vehicle)
+            lazy_accidents.append(accident)
+
 
         if use_dask:
             people = dd.concat(lazy_people)
             vehicles = dd.concat(lazy_vehicles)
             accidents = dd.concat(lazy_accidents)
-            people.visualize(filename='people.svg')
-            vehicles.visualize(filename='vehicles.svg')
-            accidents.visualize(filename='accidents.svg')
+            if debug >= 2:
+                people.visualize(filename='people.svg')
+                vehicles.visualize(filename='vehicles.svg')
+                accidents.visualize(filename='accidents.svg')
             people = people.compute()
             vehicles = vehicles.compute()
             accidents = accidents.compute()
@@ -108,132 +148,197 @@ def pipeline(
             vehicles = pd.concat(lazy_vehicles)
             accidents = pd.concat(lazy_accidents)
 
-        print("Data loaded.")
-        print("Processing People.")
+        if debug > 0:
+            print("Data loaded.")
+            print("Processing People.")
 
-        per = (
-            people
-                .remove_empty()
-                .assign(PERSON_TYPE=lambda x: ei.person_type(x),
-                        RESTRAINTS=lambda x: ei.restraint_use(x),
-                        AIR_BAG_DEPLOYMENT=lambda x: ei.air_bag_deployed(x),
-                        DEAD=lambda x: x['INJ_SEV'] == 4,
-                        HELMETED=lambda x: ei.helmet_use(x),
-                        )
-                .groupby(['YEAR'])
-                .apply(mapping, mappers=mappers['Person'])
-                .droplevel(0)
-                .coalesce(['P_CF1', 'P_SF1'])
-                .coalesce(['P_CF2', 'P_SF2'])
-                .coalesce(['P_CF3', 'P_SF3'])
+        per = process_people(people, mappers)
 
-        )
+        if debug > 0:
+            print("Processing Accidents.")
 
-        per = createPerID(per, None)
+        acc = process_accidents(accidents, mappers)
 
-        print("Processing Accidents.")
+        if debug > 0:
+            print("Processing Vehicles.")
 
-        acc = (
-            accidents
-                .remove_empty()
-                .coalesce(['ROAD_FNC', 'FUNC_SYS'], 'FUNCTION', delete_columns=False)
-                .assign(TIME_OF_DAY=lambda x: ei.time_of_day(x),
-                        DAY_OF_WEEK=lambda x: ei.day_of_week(x),
-                        COLLISION_TYPE=lambda x: ei.collision_type(x),
-                        TRAFFICWAY=lambda x: ei.trafficway(x),
-                        FUNCTIONAL_CLASS=lambda x: ei.functional_class(x),
-                        RURAL_OR_URBAN=lambda x: ei.land_use(x),
-                        INTERSTATE=lambda x: ei.interstate(x),
-                        FIPS=lambda x: ei.get_fips(x),
-                        )
-                .remove_columns(['FUNCTION', 'COUNTY'])
-                .groupby(['YEAR'])
-                .apply(mapping, mappers=mappers['Accident'])
-                .find_replace(match='exact',
-                              CF1={45: pd.NA,
-                                   46: pd.NA,
-                                   60: pd.NA},
-                              CF2={45: pd.NA,
-                                   46: pd.NA,
-                                   60: pd.NA},
-                              CF3={45: pd.NA,
-                                   46: pd.NA,
-                                   60: pd.NA},
+        veh = process_vehicles(vehicles, mappers)
 
-                              )
-                .droplevel(0)
-                .coalesce(['LATITUDE', 'latitude'])
-                .coalesce(['LONGITUD', 'longitud'])
-        )
-
-        print("Processing Vehicles.")
-
-        vehicles.reset_index(drop=True, inplace=True)
-
-        veh = (
-            vehicles
-                .remove_empty()
-                .update_where(
-                conditions=(vehicles['YEAR'] <= 1997) & (vehicles['MOD_YEAR'] == 99),
-                target_column_name='MOD_YEAR',
-                target_val=9999
-            )
-                .then(fix_mod_year)
-                .assign(PASSENGER_CAR=lambda x: ei.is_passenger_car(x),
-                        LIGHT_TRUCK_OR_VAN=lambda x:
-                            ei.is_light_truck_or_van(x),
-                        LARGE_TRUCK=lambda x: ei.is_large_truck(x),
-                        MOTORCYCLE=lambda x: ei.is_motorcycle(x),
-                        BUS=lambda x: ei.is_bus(x),
-                        OTHER_UNKNOWN_VEHICLE=lambda x:
-                            ei.is_other_or_unknown(x),
-                        PASSENGER_VEHICLE=lambda x:
-                            ei.is_passenger_vehicle(x),
-                        UTILITY_VEHICLE=lambda x:
-                            ei.is_utility_vehicle(x),
-                        PICKUP=lambda x: ei.is_pickup(x),
-                        VAN=lambda x: ei.is_van(x),
-                        MEDIUM_TRUCK=lambda x: ei.is_medium_truck(x),
-                        HEAVY_TRUCK=lambda x: ei.is_heavy_truck(x),
-                        COMBINATION_TRUCK=lambda x:
-                            ei.is_combination_truck(x),
-                        SINGLE_UNIT_TRUCK=lambda x:
-                            ei.is_single_unit_truck(x))
-                .groupby(['YEAR'])
-                .apply(mapping, mappers=mappers['Vehicle'])
-                .droplevel(0)
-                .coalesce(['VEH_CF1', 'VEH_SC1'])
-                .coalesce(['VEH_CF2', 'VEH_SC2'])
-                .coalesce(['DR_CF1', 'DR_SF1'])
-                .coalesce(['DR_CF2', 'DR_SF2'])
-                .coalesce(['DR_CF3', 'DR_SF3'])
-                .coalesce(['DR_CF4', 'DR_SF4'])
-                .encode_categorical(['STATE', 'HIT_RUN', 'MAKE', 'BODY_TYP',
-                                     'ROLLOVER', 'J_KNIFE', 'TOW_VEH', 'SPEC_USE', 'EMER_USE', 'IMPACT1',
-                                     'IMPACT2', 'DEFORMED', 'IMPACTS', 'TOWED', 'FIRE_EXP', 'VEH_CF1',
-                                     'VEH_CF2', 'M_HARM', 'WGTCD_TR', 'FUELCODE', 'DR_PRES', 'DR_DRINK',
-                                     'L_STATE', 'L_STATUS', 'L_RESTRI', 'DR_TRAIN', 'VIOL_CHG',
-                                     'DR_CF1', 'DR_CF2', 'DR_CF3', 'VINA_MOD', 'HAZ_CARG', 'VEH_MAN',
-                                     'L_COMPL', 'VIN_BT'])
-        )
-
-        save_pkl(target_folder, per, veh, acc)
+        #save_pkl(target_folder, per, veh, acc)
     else:
-        if not load_from:
-            load_from = "full"
 
         load_path = Path(__file__).resolve().parents[2] / "data" / "processed" / load_from
 
         veh = pd.read_pickle(load_path / "vehicles.pkl.xz")
         acc = pd.read_pickle(load_path / "accidents.pkl.xz")
         per = pd.read_pickle(load_path / "people.pkl.xz")
+
         if start_year > 1975 or end_year < 2018:
             veh = veh.query(f"YEAR >= {start_year} and YEAR <= {end_year}").reset_index()
             acc = veh.query(f"YEAR >= {start_year} and YEAR <= {end_year}").reset_index()
             per = per.query(f"YEAR >= {start_year} and YEAR <= {end_year}").reset_index()
 
-    print("Done")
+    if debug > 0: print("Done")
+
     return veh, acc, per
+
+
+def process_accidents(accidents, mappers):
+    func_coalesce = []
+    if 'ROAD_FNC' in accidents.columns:
+        func_coalesce.append('ROAD_FNC')
+    if 'FUNC_SYS' in accidents.columns:
+        func_coalesce.append('FUNC_SYS')
+    if len(func_coalesce) == 2:
+        acc = accidents.coalesce(func_coalesce, target_column_name='FUNCTION')
+    elif len(func_coalesce) == 1:
+        acc = accidents.rename({func_coalesce[0]: 'FUNCTION'})
+    else:
+        acc = accidents
+    if 'FUNCTION' in acc.columns:
+        acc = (acc
+               .assign(FUNCTIONAL_CLASS=lambda x: ei.functional_class(x),
+                       RURAL_OR_URBAN=lambda x: ei.land_use(x),
+                       INTERSTATE=lambda x: ei.interstate(x),))
+    acc = (
+        acc
+            .assign(TIME_OF_DAY=lambda x: ei.time_of_day(x),
+                    DAY_OF_WEEK=lambda x: ei.day_of_week(x),
+                    COLLISION_TYPE=lambda x: ei.collision_type(x),
+                    TRAFFICWAY=lambda x: ei.trafficway(x),
+                    FIPS=lambda x: ei.get_fips(x),
+                    )
+            .groupby(['YEAR'])
+            .apply(mapping, mappers=mappers['Accident'])
+            .find_replace(match='exact',
+                          CF1={45: pd.NA,
+                               46: pd.NA,
+                               60: pd.NA},
+                          CF2={45: pd.NA,
+                               46: pd.NA,
+                               60: pd.NA},
+                          CF3={45: pd.NA,
+                               46: pd.NA,
+                               60: pd.NA},
+
+                          )
+            #.droplevel(0)
+            .remove_empty()
+    )
+    if 'latitude' in acc.columns:
+        acc = (
+            acc
+                .coalesce(['LATITUDE', 'latitude'])
+                .coalesce(['LONGITUD', 'longitud'])
+        )
+
+    return acc
+
+
+def fix_mod_year(df):
+    df['MOD_YEAR'] = df['MOD_YEAR'].mask((df['MOD_YEAR'] < 99),
+                                         df['MOD_YEAR'].add(1900))
+    return df
+
+
+def process_vehicles(vehicles, mappers):
+    vehicles.reset_index(drop=True, inplace=True)
+
+    veh = (
+        vehicles
+            .update_where(
+            conditions=(vehicles['YEAR'] <= 1997) & (vehicles['MOD_YEAR'] == 99),
+            target_column_name='MOD_YEAR',
+            target_val=9999)
+            .then(fix_mod_year)
+            .assign(PASSENGER_CAR=lambda x: ei.is_passenger_car(x),
+                    LIGHT_TRUCK_OR_VAN=lambda x:
+                    ei.is_light_truck_or_van(x),
+                    LARGE_TRUCK=lambda x: ei.is_large_truck(x),
+                    MOTORCYCLE=lambda x: ei.is_motorcycle(x),
+                    BUS=lambda x: ei.is_bus(x),
+                    OTHER_UNKNOWN_VEHICLE=lambda x:
+                    ei.is_other_or_unknown(x),
+                    PASSENGER_VEHICLE=lambda x:
+                    ei.is_passenger_vehicle(x),
+                    UTILITY_VEHICLE=lambda x:
+                    ei.is_utility_vehicle(x),
+                    PICKUP=lambda x: ei.is_pickup(x),
+                    VAN=lambda x: ei.is_van(x),
+                    MEDIUM_TRUCK=lambda x: ei.is_medium_truck(x),
+                    HEAVY_TRUCK=lambda x: ei.is_heavy_truck(x),
+                    COMBINATION_TRUCK=lambda x:
+                    ei.is_combination_truck(x),
+                    SINGLE_UNIT_TRUCK=lambda x:
+                    ei.is_single_unit_truck(x))
+            .groupby(['YEAR'])
+            .apply(mapping, mappers=mappers['Vehicle'])
+            #.droplevel(0)
+            .remove_empty()
+    )
+
+    if ('VEH_SC1' in veh.columns) and ('VEH_CF1' in veh.columns):
+        veh = (
+            veh
+                .coalesce(['VEH_CF1', 'VEH_SC1'])
+                .coalesce(['VEH_CF2', 'VEH_SC2'])
+                .coalesce(['DR_CF1', 'DR_SF1'])
+                .coalesce(['DR_CF2', 'DR_SF2'])
+                .coalesce(['DR_CF3', 'DR_SF3'])
+                .coalesce(['DR_CF4', 'DR_SF4'])
+        )
+    elif ('VEH_CF1' not in veh.columns):
+        veh = (
+            veh
+                .rename_columns({
+                'VEH_SC1': 'VEH_CF1',
+                'VEH_SC2': 'VEH_CF2',
+                'DR_SF1': 'DR_CF1',
+                'DR_SF2': 'DR_CF2',
+                'DR_SF3': 'DR_CF3',
+                'DR_SF4': 'DR_CF4',
+            }))
+
+    return veh.encode_categorical(list(
+        {'STATE', 'HIT_RUN', 'MAKE', 'BODY_TYP', 'ROLLOVER', 'J_KNIFE', 'TOW_VEH', 'SPEC_USE', 'EMER_USE', 'IMPACT1',
+         'IMPACT2', 'DEFORMED', 'IMPACTS', 'TOWED', 'FIRE_EXP', 'VEH_CF1', 'VEH_CF2', 'M_HARM', 'WGTCD_TR', 'FUELCODE',
+         'DR_PRES', 'DR_DRINK', 'L_STATE', 'L_STATUS', 'L_RESTRI', 'DR_TRAIN', 'VIOL_CHG', 'DR_CF1', 'DR_CF2', 'DR_CF3',
+         'VINA_MOD', 'HAZ_CARG', 'VEH_MAN', 'L_COMPL', 'VIN_BT'} & set(veh.columns)))
+
+
+def process_people(people, mappers):
+    per = (
+        people
+            .remove_empty()
+            .assign(PERSON_TYPE=lambda x: ei.person_type(x),
+                    RESTRAINTS=lambda x: ei.restraint_use(x),
+                    AIR_BAG_DEPLOYMENT=lambda x: ei.air_bag_deployed(x),
+                    DEAD=lambda x: x['INJ_SEV'] == 4,
+                    HELMETED=lambda x: ei.helmet_use(x),
+                    )
+            .groupby(['YEAR'])
+            .apply(mapping, mappers=mappers['Person'])
+            #.droplevel(0)
+    )
+    for col in per.columns:
+        print(col)
+    if ('P_SF1' in per.columns) and ('P_CF1' in per.columns):
+        per = (
+            per
+                .coalesce(['P_CF1', 'P_SF1'])
+                .coalesce(['P_CF2', 'P_SF2'])
+                .coalesce(['P_CF3', 'P_SF3'])
+        )
+    elif 'P_CF1' not in per.columns:
+        per = (
+            per
+                .rename_columns({
+                'P_SF1': 'P_CF1',
+                'P_SF2': 'P_CF2',
+                'P_SF3': 'P_CF3',
+            }))
+
+    return createPerID(per, None)
 
 
 def save_pkl(fname, people, vehicles, accidents):
@@ -297,6 +402,10 @@ def load_basic(year, use_dask=True, data_dir=None, mapping=None):
                            'VIN_LNGT', 'FUELCODE', 'CARBUR', 'CYLINDER', 'DISPLACE',
                            'MCYCL_CY', 'TIRE_SZE', 'TON_RAT', 'TRK_WT', 'TRKWTVAR',
                            'MCYCL_WT', 'VIN_REST', 'WHLDRWHL', 'RUR_URB', 'FUNC_SYS']
+    for skipper in skip_per:
+        skip_per.append(f"{skipper}NAME")
+    for skipper in skip_veh:
+        skip_veh.append(f"{skipper}NAME")
 
     if use_dask:
 

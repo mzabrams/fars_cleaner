@@ -25,7 +25,7 @@ bibliography: paper.bib
 The Fatality Analysis Reporting System (FARS) is a database documenting all vehicle
 fatalities in the United States since 1975. The FARS dataset is used toinform safety 
 decisions at the local, state and national levels, and provides key insights into the
-efficacy of changing vehicle and trafficway safety standards @RN256. However, the 
+efficacy of changing vehicle and trafficway safety standards [@RN256]. However, the 
 coding scheme used for many fields has changed through the years, leading to difficulty
 in comparing data from year to year. Currently, researchers interested in exploring
 the data must manually download .zip files for each year of interest from the 
@@ -42,7 +42,7 @@ Additionally, `fars_cleaner` provides an interface to analyze the dataset using 
 Double Pair comparison method, optionally enabling the user to implement a modified 
 version with improved variance calculations. 
 
-`fars_cleaner` has been used  @ircobi2020
+`fars_cleaner` has been used  [@ircobi2020]
 
 # Citations
 

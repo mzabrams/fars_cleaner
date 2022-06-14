@@ -16,67 +16,6 @@ from time import sleep
 
 NOW = datetime.datetime.now()
 
-
-def decode_accident(group, mappers):
-    """This should be applied with pd.GroupBy.apply, grouped on YEAR"""
-    yr = group.name
-    #print(yr)
-    #print('YEAR' in group.columns)
-    decoded = group.copy()
-
-    decoded = decoded.assign(TIME_OF_DAY=lambda x: ei.time_of_day(x),
-                             DAY_OF_WEEK=lambda x: ei.day_of_week(x),
-                             COLLISION_TYPE=lambda x: ei.collision_type(x),
-                             TRAFFICWAY=lambda x: ei.trafficway(x))
-                             #RURAL_OR_URBAN=lambda x: ei.land_use(x))
-                             #INTERSTATE=lambda x: ei.interstate(x))
-    """
-
-    accidents['RURAL_OR_URBAN'] = accidents.apply(ei.land_use,
-                                                  axis='columns')
-    accidents['INTERSTATE'] = accidents.apply(ei.interstate,
-                                              axis='columns')"""
-
-    cur_mappers = year_mapper(mappers, yr)
-    #print(cur_mappers)
-
-    return decoded.replace(cur_mappers)
-
-def decode_vehicle(group, mappers):
-    yr = group.name
-    #print(yr, mappers)
-    #print('YEAR' in group.columns)
-    decoded = group#.copy()
-
-    decoded = decoded.assign(PASSENGER_CAR=lambda x: ei.is_passenger_car(x),
-                             LIGHT_TRUCK_OR_VAN=lambda x:
-                                 ei.is_light_truck_or_van(x),
-                             LARGE_TRUCK=lambda x: ei.is_large_truck(x),
-                             MOTORCYCLE=lambda x: ei.is_motorcycle(x),
-                             BUS=lambda x: ei.is_bus(x),
-                             OTHER_UNKNOWN_VEHICLE=lambda x:
-                                 ei.is_other_or_unknown(x),
-                             PASSENGER_VEHICLE=lambda x:
-                                 ei.is_passenger_vehicle(x),
-                             UTILITY_VEHICLE=lambda x:
-                                 ei.is_utility_vehicle(x),
-                             PICKUP=lambda x: ei.is_pickup(x),
-                             VAN=lambda x: ei.is_van(x),
-                             MEDIUM_TRUCK=lambda x: ei.is_medium_truck(x),
-                             HEAVY_TRUCK=lambda x: ei.is_heavy_truck(x),
-                             COMBINATION_TRUCK=lambda x:
-                                 ei.is_combination_truck(x),
-                             SINGLE_UNIT_TRUCK=lambda x:
-                                 ei.is_single_unit_truck(x))
-    if yr <= 1997:
-        decoded['MOD_YEAR'] = (decoded['MOD_YEAR']
-                               .sum(1900)
-                               .replace(1999, pd.NA))
-    cur_mappers = year_mapper(mappers, yr)
-    print(yr)
-    return decoded.replace(cur_mappers)
-
-
 def get_renaming(mappers, year):
     """Get original to final column namings."""
     renamers = {}
