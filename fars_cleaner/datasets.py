@@ -125,3 +125,6 @@ class FARSFetcher:
 
     def get_data_path(self):
         return self.cache_path
+    
+    def get_show_progress(self):
+        return self.show_progress

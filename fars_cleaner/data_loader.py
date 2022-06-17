@@ -111,6 +111,8 @@ def load_pipeline(
 
     if fetcher:
         fetcher.fetch_subset(start_year, end_year)
+        if debug > 0:
+            print("Fetched originals, loading to pandas....")
 
     if first_run:
 
@@ -119,6 +121,8 @@ def load_pipeline(
         lazy_accidents = []
 
         for year in range(start_year, end_year + 1):
+            if debug > 1:
+                print(year)
             vehicle, person, accident = load_basic(year,
                                                    use_dask=use_dask,
                                                    data_dir=data_dir,
@@ -164,7 +168,7 @@ def load_pipeline(
 
         veh = process_vehicles(vehicles, mappers)
 
-        #save_pkl(target_folder, per, veh, acc)
+        save_pkl(target_folder, per, veh, acc)
     else:
 
         load_path = Path(__file__).resolve().parents[2] / "data" / "processed" / load_from
@@ -228,8 +232,8 @@ def process_accidents(accidents, mappers):
     if 'latitude' in acc.columns:
         acc = (
             acc
-                .coalesce(['LATITUDE', 'latitude'])
-                .coalesce(['LONGITUD', 'longitud'])
+                .coalesce('LATITUDE', 'latitude')
+                .coalesce('LONGITUD', 'longitud')
         )
 
     return acc
@@ -280,12 +284,13 @@ def process_vehicles(vehicles, mappers):
     if ('VEH_SC1' in veh.columns) and ('VEH_CF1' in veh.columns):
         veh = (
             veh
-                .coalesce(['VEH_CF1', 'VEH_SC1'])
-                .coalesce(['VEH_CF2', 'VEH_SC2'])
-                .coalesce(['DR_CF1', 'DR_SF1'])
-                .coalesce(['DR_CF2', 'DR_SF2'])
-                .coalesce(['DR_CF3', 'DR_SF3'])
-                .coalesce(['DR_CF4', 'DR_SF4'])
+                #.coalesce(['VEH_CF1', 'VEH_SC1'])
+                .coalesce('VEH_SC1', 'VEH_CF1', target_column_name='VEH_CF1')
+                .coalesce('VEH_SC2', 'VEH_CF2', target_column_name='VEH_CF2')
+                .coalesce('DR_SF1', 'DR_CF1', target_column_name='DR_CF1')
+                .coalesce('DR_SF2', 'DR_CF2', target_column_name='DR_CF2')
+                .coalesce('DR_SF3', 'DR_CF3', target_column_name='DR_CF3')
+                .coalesce('DR_SF4', 'DR_CF4', target_column_name='DR_CF4')
         )
     elif ('VEH_CF1' not in veh.columns):
         veh = (
@@ -320,14 +325,13 @@ def process_people(people, mappers):
             .apply(mapping, mappers=mappers['Person'])
             #.droplevel(0)
     )
-    for col in per.columns:
-        print(col)
+   
     if ('P_SF1' in per.columns) and ('P_CF1' in per.columns):
         per = (
             per
-                .coalesce(['P_CF1', 'P_SF1'])
-                .coalesce(['P_CF2', 'P_SF2'])
-                .coalesce(['P_CF3', 'P_SF3'])
+                .coalesce('P_SF1', 'P_CF1', target_column_name='P_CF1')
+                .coalesce('P_SF2', 'P_CF2', target_column_name='P_CF2')
+                .coalesce('P_SF3', 'P_CF3', target_column_name='P_CF3')
         )
     elif 'P_CF1' not in per.columns:
         per = (
@@ -402,11 +406,18 @@ def load_basic(year, use_dask=True, data_dir=None, mapping=None):
                            'VIN_LNGT', 'FUELCODE', 'CARBUR', 'CYLINDER', 'DISPLACE',
                            'MCYCL_CY', 'TIRE_SZE', 'TON_RAT', 'TRK_WT', 'TRKWTVAR',
                            'MCYCL_WT', 'VIN_REST', 'WHLDRWHL', 'RUR_URB', 'FUNC_SYS']
+    namedskip = []
     for skipper in skip_per:
-        skip_per.append(f"{skipper}NAME")
+        toap = f"{skipper}NAME"
+        if toap not in skip_per:
+            namedskip.append(toap)
+    skip_per.extend(namedskip)
+    namedskip = []
     for skipper in skip_veh:
-        skip_veh.append(f"{skipper}NAME")
-
+        toap = f"{skipper}NAME"
+        if toap not in skip_veh:
+            namedskip.append(toap)
+    skip_veh.extend(namedskip)
     if use_dask:
 
         veh_df = dd.from_pandas(pd.read_csv(vehicle_file,
@@ -441,7 +452,6 @@ def load_basic(year, use_dask=True, data_dir=None, mapping=None):
         per_df = pd.read_csv(person_file, encoding='cp1252',
                              usecols=lambda x: x not in skip_per,
                              low_memory=False).rename(columns=per_cols)
-
         acc_df = pd.read_csv(accident_file, encoding='cp1252',
                              low_memory=False).rename(columns=acc_cols)
 

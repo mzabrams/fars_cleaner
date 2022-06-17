@@ -44,4 +44,4 @@
 2018 bd0c5473e3f0eaf44c3236000225e5ca90070884684d1b69036062b2ddbdaf2e https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2018/National/FARS2018NationalCSV.zip
 2019 0974abb92cfb04fa022631a838a3f46555025f2b011ee78ecad15bcf86c60f31 https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2019/National/FARS2019NationalCSV.zip
 2020 134c3322d355a475c4332193d6f99fb57d8e0a00464ecbcf0d2db7deebd9097f https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2020/National/FARS2020NationalCSV.zip
-mapping.dict 86f883d3eb8ac80823052bac2f97e5c10fbeb92d4e6803613f11afe74e50b6f2 https://github.com/mzabrams/fars-cleaner/raw/master/fars_cleaner/mapping.dict
+mapping.dict d0ff01e2075da995ad5f57941c33a2d8af852b4c550ec702fdd5af4ffcaaff0f https://github.com/mzabrams/fars-cleaner/raw/master/fars_cleaner/lookup_tables/mapping.dict

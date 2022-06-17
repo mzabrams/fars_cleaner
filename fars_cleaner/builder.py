@@ -11,6 +11,7 @@ import pandas as pd
 #import extra_info as ei
 
 from pathlib import Path
+import pickle
 
 from time import sleep
 
@@ -44,7 +45,8 @@ def year_mapper(mappers, year):
     return cur_mapper
 
 
-def load_sheets(t_list=None):
+def load_sheets(t_list=None,
+                table_folder=Path(__file__).parent.resolve() / "lookup_tables"):
     """Load mapping for given sheets.
 
     Loads a lsit of .xlsx files from disk as named in `t_list`. Generates a
@@ -53,6 +55,9 @@ def load_sheets(t_list=None):
 
     Parameters
     ----------
+    table_folder: Path-like
+        Path to folder with lookup tables. Defaults to "lookup_tables"
+        folder in current directory.
     t_list : list, optional
         List of code sheets to load and map. The default is:
             ['Accident', 'Vehicle', ' Person', 'Vehnit'].
@@ -92,8 +97,8 @@ def load_sheets(t_list=None):
                 'discontinued': False,
                 'dtype': None,
                 'lookup': False,
-                'mappers': None}
-    table_folder = Path(__file__).parent.resolve()
+                'mappers': None,}
+    #table_folder = Path(__file__).parent.resolve()
     for table in t_list:
 
         target_table = table_folder / f"{table}.xlsx"
@@ -173,7 +178,7 @@ def lookup(code_table, year):
     load_sheets: loads the data sheets and passes to this for mapping
     """
     cur_lookup = code_table.fillna({'Year_Implemented': 1975,
-                                    'Year_Discontinued': 2018})
+                                    'Year_Discontinued': 2020})
     cur_lookup = cur_lookup.query("Year_Implemented <= {year} and "
                                   "Year_Discontinued >= {year}".format(year=year))
     return pd.Series(cur_lookup['DEF'].values, index=cur_lookup['ID'].values).to_dict()
