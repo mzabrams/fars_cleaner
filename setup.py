@@ -15,6 +15,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'pooch',
+        'pandas',
+        'numpy',
     ],
     include_package_data=True,
     classifiers=(

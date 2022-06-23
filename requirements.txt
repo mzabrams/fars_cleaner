@@ -5,3 +5,4 @@ hypothesis
 pyjanitor
 dask
 pooch
+tqdm

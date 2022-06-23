@@ -1,4 +1,4 @@
-name: fars-
+name: fars_cleaner
 channels:
   - conda-forge
   - defaults
@@ -8,3 +8,4 @@ dependencies:
   - pandas
   - dask
   - janitor
+  - tqdm
