@@ -135,7 +135,6 @@ def load_pipeline(
             lazy_vehicles.append(vehicle)
             lazy_accidents.append(accident)
 
-
         if use_dask:
             people = dd.concat(lazy_people)
             vehicles = dd.concat(lazy_vehicles)
@@ -194,7 +193,7 @@ def process_accidents(accidents, mappers):
     if 'FUNC_SYS' in accidents.columns:
         func_coalesce.append('FUNC_SYS')
     if len(func_coalesce) == 2:
-        acc = accidents.coalesce(func_coalesce, target_column_name='FUNCTION')
+        acc = accidents.coalesce(*func_coalesce, target_column_name='FUNCTION')
     elif len(func_coalesce) == 1:
         acc = accidents.rename({func_coalesce[0]: 'FUNCTION'})
     else:
@@ -203,7 +202,7 @@ def process_accidents(accidents, mappers):
         acc = (acc
                .assign(FUNCTIONAL_CLASS=lambda x: ei.functional_class(x),
                        RURAL_OR_URBAN=lambda x: ei.land_use(x),
-                       INTERSTATE=lambda x: ei.interstate(x),))
+                       INTERSTATE=lambda x: ei.interstate(x), ))
     acc = (
         acc
             .assign(TIME_OF_DAY=lambda x: ei.time_of_day(x),
@@ -226,7 +225,8 @@ def process_accidents(accidents, mappers):
                                60: pd.NA},
 
                           )
-            #.droplevel(0)
+            # .droplevel(0)
+            .remove_columns(column_names=['COUNTY'])
             .remove_empty()
     )
     if 'latitude' in acc.columns:
@@ -234,6 +234,10 @@ def process_accidents(accidents, mappers):
             acc
                 .coalesce('LATITUDE', 'latitude')
                 .coalesce('LONGITUD', 'longitud')
+                .remove_columns(column_names=[
+                                "latitude",
+                                "longitud"]
+            )
         )
 
     return acc
@@ -277,20 +281,25 @@ def process_vehicles(vehicles, mappers):
                     ei.is_single_unit_truck(x))
             .groupby(['YEAR'])
             .apply(mapping, mappers=mappers['Vehicle'])
-            #.droplevel(0)
+            # .droplevel(0)
             .remove_empty()
     )
 
     if ('VEH_SC1' in veh.columns) and ('VEH_CF1' in veh.columns):
         veh = (
             veh
-                #.coalesce(['VEH_CF1', 'VEH_SC1'])
+                # .coalesce(['VEH_CF1', 'VEH_SC1'])
                 .coalesce('VEH_SC1', 'VEH_CF1', target_column_name='VEH_CF1')
                 .coalesce('VEH_SC2', 'VEH_CF2', target_column_name='VEH_CF2')
                 .coalesce('DR_SF1', 'DR_CF1', target_column_name='DR_CF1')
                 .coalesce('DR_SF2', 'DR_CF2', target_column_name='DR_CF2')
                 .coalesce('DR_SF3', 'DR_CF3', target_column_name='DR_CF3')
                 .coalesce('DR_SF4', 'DR_CF4', target_column_name='DR_CF4')
+                .remove_columns(column_names=[
+                "VEH_SC1", "VEH_SC2",
+                "DR_SF1", "DR_SF2", "DR_SF3", "DR_SF4",
+            ]
+            )
         )
     elif ('VEH_CF1' not in veh.columns):
         veh = (
@@ -312,6 +321,16 @@ def process_vehicles(vehicles, mappers):
 
 
 def process_people(people, mappers):
+    if ('MAN_REST' in people.columns) and ('REST_USE' in people.columns):
+        people = (
+            people.coalesce('MAN_REST', 'REST_USE', target_column_name='REST_USE')
+            .remove_columns(column_names=['MAN_REST'])
+        )
+    elif ('MAN_REST' in people.columns):
+        people = (
+            people.rename_columns({'MAN_REST':'REST_USE'})
+        )
+
     per = (
         people
             .remove_empty()
@@ -323,15 +342,18 @@ def process_people(people, mappers):
                     )
             .groupby(['YEAR'])
             .apply(mapping, mappers=mappers['Person'])
-            #.droplevel(0)
+        # .droplevel(0)
     )
-   
+
     if ('P_SF1' in per.columns) and ('P_CF1' in per.columns):
         per = (
             per
                 .coalesce('P_SF1', 'P_CF1', target_column_name='P_CF1')
                 .coalesce('P_SF2', 'P_CF2', target_column_name='P_CF2')
                 .coalesce('P_SF3', 'P_CF3', target_column_name='P_CF3')
+                .remove_columns(column_names=
+                                ["P_SF1", "P_SF2", "P_SF3"]
+                                )
         )
     elif 'P_CF1' not in per.columns:
         per = (
@@ -405,7 +427,8 @@ def load_basic(year, use_dask=True, data_dir=None, mapping=None):
                            'VIN_BT', 'CERT_NO', 'VINTYPE', 'VINMAKE', 'VINMODYR',
                            'VIN_LNGT', 'FUELCODE', 'CARBUR', 'CYLINDER', 'DISPLACE',
                            'MCYCL_CY', 'TIRE_SZE', 'TON_RAT', 'TRK_WT', 'TRKWTVAR',
-                           'MCYCL_WT', 'VIN_REST', 'WHLDRWHL', 'RUR_URB', 'FUNC_SYS']
+                           'MCYCL_WT', 'VIN_REST', 'WHLDRWHL', 'RUR_URB', 'FUNC_SYS',
+                           'VPICMAKE', 'VPICMODEL', 'VPICBODYCLASS', 'ICFINALBODY']
     namedskip = []
     for skipper in skip_per:
         toap = f"{skipper}NAME"
@@ -453,6 +476,7 @@ def load_basic(year, use_dask=True, data_dir=None, mapping=None):
                              usecols=lambda x: x not in skip_per,
                              low_memory=False).rename(columns=per_cols)
         acc_df = pd.read_csv(accident_file, encoding='cp1252',
+                             usecols=lambda x: not x.endswith("NAME"),
                              low_memory=False).rename(columns=acc_cols)
 
     return veh_df, per_df, acc_df

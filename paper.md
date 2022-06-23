@@ -1,5 +1,5 @@
 ---
-title: 'fars_cleaner: A Python package for downloading and processing vehicle fatality data in the US'
+title: 'fars_cleaner: A Python package for downloading and pre-processing vehicle fatality data in the US'
 tags:
   - Python
   - FARS
@@ -14,65 +14,116 @@ authors:
   - name: Cameron R. Bass
     affiliation: 1
 affiliations:
- - name: Duke University
+ - name: Duke University, USA
    index: 1
-date: 25 June 2020
+date: 23 June 2022
 bibliography: paper.bib
 ---
 
 # Summary
 
-The Fatality Analysis Reporting System (FARS) is a database documenting all vehicle
-fatalities in the United States since 1975. The FARS dataset is used toinform safety 
-decisions at the local, state and national levels, and provides key insights into the
-efficacy of changing vehicle and trafficway safety standards [@RN256]. However, the 
-coding scheme used for many fields has changed through the years, leading to difficulty
-in comparing data from year to year. Currently, researchers interested in exploring
-the data must manually download .zip files for each year of interest from the 
-National Highway Transportation Safety Administration's website, and reference the 
-annually-issued Analytical User's Manual to decode the downloaded files.  
+Historical vehicle safety analysis in the United States leans heavily on public datasets
+to determine factors leading to crash fatality. The Fatality Analysis Reporting System (FARS) 
+is one such database collected by the National Highway Traffic Safety Administration (NHTSA)
+documenting all vehicle fatalities in the United States since 1975. 
+The FARS dataset is used to inform safety decisions at the local, state and national levels,
+and provides key insights into the efficacy of changing vehicle and trafficway safety standards
+[@FARSmanual]. The FARS dataset is frequently used by vehicle safety researchers to track
+long-term trends in fatality outcomes. As the FARS data have evolved over time, the variable coding
+has changed, sometimes dramatically, in some cases making it difficult to compare and
+analyze data across decades.
+
+The FARS dataset consists of up to 30 data files for each year, with hundreds of recorded variables
+for each crash. To decrease file storage requirements and simplify distribution of the data,
+the vast majority of data fields are coded numerically, and then converted by a user
+referencing the Analytical User's Manual provided by NHTSA [@FARSmanual]. As a continuously evolving 
+database, the content of these data files and the specific numeric values associated with each
+field are constantly updated as needs change. Currently, researchers interested in exploring the data 
+must manually download .zip files for each year of interest from the NHTSA website, 
+and reference the annually-issued Analytical User's Manual to decode the downloaded files.  
 
 `fars_cleaner` is a Python package which aims to solve some of these issues. This
 package provides a simple API for downloading and pre-processing the FARS dataset in 
 such a way that simplifies comparisons across time. Users can download the FARS data,
-and 
-`fars_cleaner` delivers data to the user as Pandas DataFrames, 
+and `fars_cleaner` delivers data to the user as Pandas DataFrames. Data are preprocessed
+within the subset of years requested, converting numerical values to categorical text fields.
+This reduces the burden on researchers seeking to utilize the FARS dataset.
 
-Additionally, `fars_cleaner` provides an interface to analyze the dataset using the 
-Double Pair comparison method, optionally enabling the user to implement a modified 
-version with improved variance calculations. 
+## Usage
 
-`fars_cleaner` has been used  [@ircobi2020]
+### Downloading FARS data
+The `FARSFetcher` class provides an interface to download and unzip selected years from the NHTSA FARS FTP server. 
+The class uses `pooch` to download and unzip the selected files. By default, files are unzipped to your OS's cache directory.
 
-# Citations
-
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
-# Figures
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Fenced code blocks are rendered with syntax highlighting:
 ```python
-for n in range(10):
-    yield f(n)
-```	
+from fars_cleaner import FARSFetcher
 
-# Acknowledgements
+# Prepare for FARS file download, using the OS cache directory. 
+fetcher = FARSFetcher()
+```
+The user can optionally pass a download path for the data files, otherwise the `fetcher` defaults to the OS
+cache location. Passing `project_dir` will download files to `project_dir/data/fars` by default. This behavior can be 
+overridden by setting `cache_path` as well. Setting `cache_path` alone provides a direct path to the directory
+you want to download files into.
 
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
+```python
+from pathlib import Path
+from fars_cleaner import FARSFetcher
+
+SOME_PATH = Path("/YOUR/PROJECT/PATH") 
+# Prepare to download to /YOUR/PROJECT/PATH/data/fars
+# This is the recommended usage.
+fetcher = FARSFetcher(project_dir=SOME_PATH)
+
+# Prepare to download to /YOUR/PROJECT/PATH/fars
+cache_path = "fars"
+fetcher = FARSFetcher(project_dir=SOME_PATH, cache_path=cache_path)
+
+cache_path = Path("/SOME/TARGET/DIRECTORY")
+# Prepare to download directly to a specific directory.
+fetcher = FARSFetcher(cache_path=cache_path)
+```
+
+Files can be downloaded in their entirety (data from 1975-2018), as a single year, or across a specified year range.
+Downloading all of the data can be quite time consuming. The download will simultaneously unzip the folders, and delete 
+the zip files. Each zipped file will be unzipped and saved in a folder `{YEAR}.unzip`
+
+```python
+# Fetch all data
+fetcher.fetch_all()
+
+# Fetch a single year
+fetcher.fetch_single(1984)
+
+# Fetch data in a year range (inclusive).
+fetcher.fetch_subset(1999, 2007)
+```
+
+### Processing FARS data
+After defining the `FARSFetcher` instance, requested data can be passed to the `load_pipeline` method for preprocessing.
+`load_pipeline` returns fully preprocessed, concatenated pandas DataFrames for the year range requested, for the primary
+analysis files (Accident, Person, and Vehicle).
+
+```python
+from fars_cleaner import FARSFetcher, load_pipeline
+
+fetcher = FARSFetcher(project_dir=project_path, )
+vehicles, accidents, people = load_pipeline(1975, 2020, 
+                                            fetcher=fetcher,
+                                            first_run=True, 
+                                            target_folder=target_folder)
+```
+
+# Statement of need
+
+The FARS dataset is in constant flux, placing a large burden on researchers seeking to conduct
+analyses of vehicle safety trends over many decades. This package simplifies the data intake
+and pre-processing process, leaving researchers with prepared pandas dataframes ready for any
+analysis with the FARS data. This package is similar in concept to the `stats-19` R package by 
+@Lovelace2019, but is developed for the US crash database.
+
+`fars_cleaner` has been used in double-pair analyses of male and female relative
+fatality risk [@ircobi2020; @WCB2022; @inprep2022], as well as a matched study with multiple 
+cause of death data in the US [@ircobi2022]. 
 
 # References

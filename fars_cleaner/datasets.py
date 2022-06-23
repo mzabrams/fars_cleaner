@@ -82,11 +82,13 @@ class FARSFetcher:
         unzipped = {}
         
         for fname in fnames:
-            if "dict" in fname:
-                print(fname)
+
             if self.GOODBOY.is_available(fname):
-                unpack = pooch.Unzip(extract_dir=f"./{fname}.unzip")
-                unzipped[fname] = self.GOODBOY.fetch(fname, processor=unpack, progressbar=self.show_progress)
+                if "dict" in fname:
+                    self.GOODBOY.fetch(fname, progressbar=self.show_progress)
+                else:
+                    unpack = pooch.Unzip(extract_dir=f"./{fname[:-4]}.unzip")
+                    unzipped[fname] = self.GOODBOY.fetch(fname, processor=unpack, progressbar=self.show_progress)
             else:
                 raise FileNotFoundError("File could not be found in FARS FTP directory.")
         return unzipped
@@ -105,9 +107,10 @@ class FARSFetcher:
         Load the FARS data for a given year.
         """
         # fname = f'{year}/National/FARS{year}NationalCSV.zip'
-        fname = f'{year}'
+        fname = f'{year}.zip'
         if self.GOODBOY.is_available(fname):
-            unzipped = self.GOODBOY.fetch(fname, processor=pooch.Unzip(), progressbar=self.show_progress)
+            unpack = pooch.Unzip(extract_dir=f"./{fname[:-4]}.unzip")
+            unzipped = self.GOODBOY.fetch(fname, processor=unpack, progressbar=self.show_progress)
         else:
             raise FileNotFoundError(f"{fname}: File could not be found in FARS FTP directory.")
 

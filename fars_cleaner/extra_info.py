@@ -454,7 +454,10 @@ def helmet_use(df):
 def air_bag_deployed(df):
     """Return air bag deployment as True/False, or NA if unknown"""
     yr = df['YEAR']
-    air_bag = df['AUT_REST'].where(yr.between(1975, 1990))
+    if 'AUT_REST' in df.columns:
+        air_bag = df['AUT_REST'].where(yr.between(1975, 1990))
+    else:
+        air_bag = pd.Series()
     if 'AIR_BAG' in df.columns:
         air_bag = air_bag.add(df['AIR_BAG'].where((yr >= 1991)), fill_value=0)
 
