@@ -55,9 +55,9 @@ def test_fetch_all():
     for year in range(1975, 2021):
         zip_path = fetcher.get_data_path() / f"{year}.zip"
         unzip_path = fetcher.get_data_path() / f"{year}.unzip"
-        accident_path = unzip_path / "ACCIDENT.CSV"
-        vehicle_path = unzip_path / "VEHICLE.CSV"
-        person_path = unzip_path / "PERSON.CSV"
+        accident_path = "ACCIDENT.CSV"
+        vehicle_path = "VEHICLE.CSV"
+        person_path = "PERSON.CSV"
         assert os.path.exists(zip_path)
         assert os.path.exists(unzip_path)
         unzipped_files = [x.upper() for x in os.listdir(unzip_path)]
