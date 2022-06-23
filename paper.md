@@ -123,7 +123,7 @@ analysis with the FARS data. This package is similar in concept to the `stats-19
 @Lovelace2019, but is developed for the US crash database.
 
 `fars_cleaner` has been used in double-pair analyses of male and female relative
-fatality risk [@ircobi2020; @WCB2022; @inprep2022], as well as a matched study with multiple 
+fatality risk [@ircobi2020; @WCB2022], as well as a matched study with multiple 
 cause of death data in the US [@ircobi2022]. 
 
 # References
