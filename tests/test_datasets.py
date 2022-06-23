@@ -60,9 +60,11 @@ def test_fetch_all():
         person_path = unzip_path / "PERSON.CSV"
         assert os.path.exists(zip_path)
         assert os.path.exists(unzip_path)
-        assert os.path.exists(accident_path)
-        assert os.path.exists(person_path)
-        assert os.path.exists(vehicle_path)
+        unzipped_files = [x.upper() for x in os.listdir(unzip_path)]
+
+        assert accident_path in unzipped_files
+        assert person_path in unzipped_files
+        assert vehicle_path in unzipped_files
         shutil.rmtree(unzip_path)
         os.remove(zip_path)
         assert not os.path.exists(zip_path)
