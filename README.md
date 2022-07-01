@@ -70,12 +70,24 @@ fetcher.fetch_subset(1999, 2007)
 ```
 
 ### Processing FARS data
+Calling `load_pipeline` will allow for full loading and pre-processing of the FARS data requested by the user.
 ```python
-import fars_cleaner
+from fars_cleaner import FARSFetcher, load_pipeline
 
-#foobar.pluralize('word') # returns 'words'
-#foobar.pluralize('goose') # returns 'geese'
-#foobar.singularize('phenomena') # returns 'phenomenon'
+fetcher = FARSFetcher(project_dir=SOME_PATH)
+vehicles, accidents, people = load_pipeline(fetcher=fetcher,
+                                            first_run=True,
+                                            target_folder=SOME_PATH)
+```
+
+Calling `load_basic` allows for simple loading of the FARS data for a single year, with no preprocessing. Files must
+be prefetched using a `FARSFetcher` or similar method. A `mapper` dictionary must be provided to identify what, if 
+any, columns require renaming. 
+
+```python
+from fars_cleaner.data_loader import load_basic
+
+vehicles, accidents, people = load_basic(year=1975, data_dir=SOME_PATH, mapper=mappings)
 ```
 
 ## Contributing

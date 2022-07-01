@@ -3,9 +3,13 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python >= 3.7
+  - python >= 3.6
   - numpy
   - pandas
   - dask
-  - janitor
+  - pyjanitor >= 0.23.1
   - tqdm
+  - pooch >= 1.6.0
+  - pathlib
+  - requests
+  - json

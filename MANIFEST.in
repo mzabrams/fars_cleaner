@@ -1,1 +1,2 @@
 include fars_cleaner/registry.txt
+include fars_cleaner/lookup_tables/*.xlsx

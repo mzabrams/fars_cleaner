@@ -1,0 +1,49 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fars_cleaner"
+version = "1.2.0"
+authors= [{ name = "Mitchell Abrams", email = "mitchell.abrams@duke.edu" }]
+license = { file = "LICENSE" }
+readme = "README.md"
+description = "A package for loading and preprocessing the NHTSA FARS crash database"
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Development Status :: 5 - Production/Stable",
+]
+keywords = [
+    "FARS",
+    "crash analysis",
+    "data preprocessing",
+    "NHTSA",
+    "vehicle safety"
+]
+dependencies = [
+    "pooch >= 1.6.0",
+    "pandas",
+    "numpy",
+    "pathlib",
+    "pyjanitor >= 0.23.1",
+    "dask",
+    "requests",
+    "tqdm"
+]
+requires-python = ">=3.6"
+
+[tool.setuptools]
+packages = ["fars_cleaner"]
+include-package-data = true
+
+[project.optional-dependencies]
+dev = ["pytest", "hypothesis"]
+
+[project.urls]
+"Homepage" = "https://github.com/mzabrams/fars-cleaner"

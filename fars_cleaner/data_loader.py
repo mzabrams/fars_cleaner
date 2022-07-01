@@ -25,7 +25,7 @@ from fars_cleaner import FARSFetcher
 
 def load_pipeline(
         start_year=1975,
-        end_year=2018,
+        end_year=2020,
         first_run=True,
         target_folder=None,
         load_from=None,
@@ -45,7 +45,7 @@ def load_pipeline(
     start_year : int, optional
         Year to start analysis. The default is 1975.
     end_year : int, optional
-        Year to end analysis. The default is 2018.
+        Year to end analysis. The default is 2020.
     first_run : bool, optional
         Flag to determine whether to process and write-out the required files, or whether the data can be loaded from
         disk pre-processed. The default is True.
@@ -68,6 +68,8 @@ def load_pipeline(
 
     Returns
     -------
+    (pandas.DataFrame, pandas.DataFrame, pandas.DataFrame)
+        Returns three DataFrames: vehicles, accidents, and people.
 
     Raises
     ------
@@ -187,6 +189,24 @@ def load_pipeline(
 
 
 def process_accidents(accidents, mappers):
+    """Accident file processor, using predefined mapping dictionary.
+
+    Accepts the unprocessed data from the concatenated ACCIDENTS.csv files. Applies appropriate mappings
+    based on the year of each record, and returns a fully preprocessed DataFrame. Several specific mappings
+    are applied from `fars_cleaner.extra_info`.
+
+    Parameters
+    ----------
+    accidents : pandas.DataFrame
+        Unprocessed DataFrame with accident-level data
+    mappers : dict
+        Dictionary containing mapping structure of selected years for all relevant variables in the accident table
+
+    Returns
+    -------
+    pandas.DataFrame
+        Processed accidents DataFrame
+    """
     func_coalesce = []
     if 'ROAD_FNC' in accidents.columns:
         func_coalesce.append('ROAD_FNC')
@@ -250,6 +270,24 @@ def fix_mod_year(df):
 
 
 def process_vehicles(vehicles, mappers):
+    """Vehicle file processor, using predefined mapping dictionary.
+
+    Accepts the unprocessed data from the concatenated VEHICLES.csv files. Applies appropriate mappings
+    based on the year of each record, and returns a fully preprocessed DataFrame. Several specific mappings
+    are applied from `fars_cleaner.extra_info`.
+
+    Parameters
+    ----------
+    vehicles : pandas.DataFrame
+        Unprocessed DataFrame with vehicle-level data
+    mappers : dict
+        Dictionary containing mapping structure of selected years for all relevant variables in the vehicle table
+
+    Returns
+    -------
+    pandas.DataFrame
+        Processed vehicles DataFrame
+    """
     vehicles.reset_index(drop=True, inplace=True)
 
     veh = (
@@ -321,6 +359,24 @@ def process_vehicles(vehicles, mappers):
 
 
 def process_people(people, mappers):
+    """Person file processor, using predefined mapping dictionary.
+
+    Accepts the unprocessed data from the concatenated PERSON.csv files. Applies appropriate mappings
+    based on the year of each record, and returns a fully preprocessed DataFrame. Several specific mappings
+    are applied from `fars_cleaner.extra_info`.
+
+    Parameters
+    ----------
+    people : pandas.DataFrame
+        Unprocessed DataFrame with person-level data
+    mappers : dict
+        Dictionary containing mapping structure of selected years for all relevant variables in the person table
+
+    Returns
+    -------
+    pandas.DataFrame
+        Processed people DataFrame
+    """
     if ('MAN_REST' in people.columns) and ('REST_USE' in people.columns):
         people = (
             people.coalesce('MAN_REST', 'REST_USE', target_column_name='REST_USE')
