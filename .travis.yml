@@ -10,7 +10,7 @@ before_install:
   - pip install -U pytest
   - pip install coverage
 install:
-  - pip install
+  - pip install -U ".[dev]"
   #- pip install -r requirements.txt
   - pip install coverage
 # command to run tests
