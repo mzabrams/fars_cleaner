@@ -18,7 +18,7 @@ conda install -c conda-forge fars-cleaner
 You can also install with [pip](https://pip.pypa.io/en/stable/).
 
 ```bash
-pip install foobar
+pip install fars-cleaner
 ```
 
 ## Usage

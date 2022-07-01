@@ -53,7 +53,8 @@ This reduces the burden on researchers seeking to utilize the FARS dataset.
 
 ### Downloading FARS data
 The `FARSFetcher` class provides an interface to download and unzip selected years from the NHTSA FARS FTP server. 
-The class uses `pooch` to download and unzip the selected files. By default, files are unzipped to your OS's cache directory.
+The class uses `pooch` [@Uieda2020] to download and unzip the selected files. By default, files are unzipped to your 
+OS's cache directory.
 
 ```python
 from fars_cleaner import FARSFetcher
