@@ -89,7 +89,7 @@ any, columns require renaming.
 ```python
 from fars_cleaner.data_loader import load_basic
 
-vehicles, accidents, people = load_basic(year=1975, data_dir=SOME_PATH, mapper=mappings)
+vehicles, accidents, people = load_basic(year=1975, data_dir=SOME_PATH, mapping=mappings)
 ```
 
 ## Contributing
