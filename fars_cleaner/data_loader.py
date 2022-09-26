@@ -533,8 +533,6 @@ def load_basic(year, use_dask=False, data_dir=None, mapping=None, client=None):
     person_file = cur_year / person_fname[0]
     accident_file = cur_year / accident_fname[0]
 
-    print(vehicle_file)
-
     acc_cols = get_renaming(mapping['Accident'], year)
     per_cols = get_renaming(mapping['Person'], year)
     veh_cols = get_renaming(mapping['Vehicle'], year)
