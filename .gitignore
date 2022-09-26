@@ -56,3 +56,6 @@ Icon?
 Thumbs.db
 
 /data/
+
+# Unison File Sync leftovers
+*sync-conflict*

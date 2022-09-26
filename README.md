@@ -93,7 +93,7 @@ vehicles, accidents, people = load_basic(year=1975, data_dir=SOME_PATH, mapping=
 ```
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 ## License
 [BSD-3 Clause](https://choosealicense.com/licenses/bsd-3-clause/)
