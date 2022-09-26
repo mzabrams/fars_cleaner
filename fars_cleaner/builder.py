@@ -49,7 +49,7 @@ def load_sheets(t_list=None,
                 table_folder=Path(__file__).parent.resolve() / "lookup_tables"):
     """Load mapping for given sheets.
 
-    Loads a lsit of .xlsx files from disk as named in `t_list`. Generates a
+    Loads a list of .xlsx files from disk as named in `t_list`. Generates a
     nested dict through which individual codes can be accessed and decoded to
     a human-readable format.
 
