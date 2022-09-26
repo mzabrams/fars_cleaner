@@ -9,10 +9,13 @@ Created on Mon Feb 17 11:04:59 2020
 import pandas as pd
 import dask.dataframe as dd
 import janitor
+import os
 
 import pickle
 
 from pathlib import Path
+
+from fuzzyfinder import fuzzyfinder
 
 from .builder import *
 from .builder import get_renaming
@@ -517,9 +520,21 @@ def load_basic(year, use_dask=False, data_dir=None, mapping=None, client=None):
         raise ValueError("Must provide a client to use Dask.")
 
     cur_year = data_dir / f"{year}.unzip"
-    vehicle_file = cur_year / "VEHICLE.csv"
-    person_file = cur_year / "PERSON.csv"
-    accident_file = cur_year / "ACCIDENT.csv"
+
+
+    cur_dir_files = os.listdir(cur_year)
+    veh_suggestions = fuzzyfinder("VEHICLE.csv", cur_dir_files)
+    per_suggestions = fuzzyfinder("PERSON.csv", cur_dir_files)
+    acc_suggestions = fuzzyfinder("ACCIDENT.csv", cur_dir_files)
+    vehicle_fname = list(veh_suggestions)
+    person_fname = list(per_suggestions)
+    accident_fname = list(acc_suggestions)
+    vehicle_file = cur_year / vehicle_fname[0]
+    person_file = cur_year / person_fname[0]
+    accident_file = cur_year / accident_fname[0]
+
+    print(vehicle_file)
+
     acc_cols = get_renaming(mapping['Accident'], year)
     per_cols = get_renaming(mapping['Person'], year)
     veh_cols = get_renaming(mapping['Vehicle'], year)

@@ -34,7 +34,8 @@ dependencies = [
     "pyjanitor >= 0.23.1",
     "dask",
     "requests",
-    "tqdm"
+    "tqdm",
+    "fuzzyfinder"
 ]
 requires-python = ">=3.7"
 
