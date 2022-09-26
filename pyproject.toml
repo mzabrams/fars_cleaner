@@ -33,6 +33,7 @@ dependencies = [
     "pathlib",
     "pyjanitor >= 0.23.1",
     "dask",
+    "distributed",
     "requests",
     "tqdm",
     "fuzzyfinder"
