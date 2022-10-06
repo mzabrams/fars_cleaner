@@ -1,9 +1,11 @@
-{% set name = "fars-cleaner" %}
-{% set version = "1.2.0" %}
+{% set pyproject = load_file_data('pyproject.toml') %}
+{% set poetry = pyproject.get('tool', {}).get('poetry') %}
+#{% set name = "fars-cleaner" %}
+#{% set version = "1.2.0" %}
 
 package:
-  name: {{ name|lower }}
-  version: {{ version }}
+  name: {{ poetry.get('name')|lower }}
+  version: {{ poetry.get('version') }}
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/fars_cleaner-{{ version }}.tar.gz

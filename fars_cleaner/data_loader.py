@@ -157,10 +157,6 @@ def load_pipeline(
             people = dd.concat(lazy_people)
             vehicles = dd.concat(lazy_vehicles)
             accidents = dd.concat(lazy_accidents)
-            if debug >= 2:
-                people.visualize(filename='people.svg')
-                vehicles.visualize(filename='vehicles.svg')
-                accidents.visualize(filename='accidents.svg')
             people = people.compute()
             vehicles = vehicles.compute()
             accidents = accidents.compute()
@@ -599,10 +595,26 @@ def load_basic(year, use_dask=False, data_dir=None, mapping=None, client=None):
                                     }
                              ).rename(columns=veh_cols)
         per_df = pd.read_csv(person_file, encoding='cp1252',
-                             usecols=lambda x: x not in skip_per,
+                             usecols=lambda x: x not in skip_per and not x.endswith("NAME"),
                              low_memory=True).rename(columns=per_cols)
         acc_df = pd.read_csv(accident_file, encoding='cp1252',
                              usecols=lambda x: not x.endswith("NAME"),
                              low_memory=True).rename(columns=acc_cols)
 
+    if not use_dask:
+        acc_intCols = acc_df.select_dtypes('integer').columns
+        acc_floatCols = acc_df.select_dtypes('float').columns
+        acc_df[acc_intCols] = acc_df[acc_intCols].apply(pd.to_numeric, downcast='integer')
+        acc_df[acc_floatCols] = acc_df[acc_floatCols].apply(pd.to_numeric, downcast='float')
+
+        veh_intCols = veh_df.select_dtypes('integer').columns
+        veh_floatCols = veh_df.select_dtypes('float').columns
+        veh_df[veh_intCols] = veh_df[veh_intCols].apply(pd.to_numeric, downcast='integer')
+        veh_df[veh_floatCols] = veh_df[veh_floatCols].apply(pd.to_numeric, downcast='float')
+
+        per_intCols = per_df.select_dtypes('integer').columns
+        per_floatCols = per_df.select_dtypes('float').columns
+        per_df[per_intCols] = per_df[per_intCols].apply(pd.to_numeric, downcast='integer')
+        per_df[per_floatCols] = per_df[per_floatCols].apply(pd.to_numeric, downcast='float')
+	
     return veh_df, per_df, acc_df
