@@ -26,10 +26,10 @@ about:
 requirements:
   host:
     - pip
-    - python >=3.7
+    - python >=3.8
     - poetry
   build:
-    - python >=3.7
+    - python >=3.8
     - poetry
   run:
     - dask-core
@@ -38,7 +38,7 @@ requirements:
     - pathlib
     - pooch >=1.6.0
     - pyjanitor >=0.23.1
-    - python >=3.7
+    - python >=3.8
     - requests
     - tqdm
     - fuzzyfinder
