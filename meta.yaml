@@ -10,7 +10,7 @@ package:
 source:
   path: .
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/fars_cleaner-{{ version }}.tar.gz
-  sha256: a9421abf1ada4c801e82a5b84c6ceb7327ab32d61cb546dfa8ea11375811d4cf
+  sha256: c1afd4573af58e6db3aa6d3bc46eec803a0fc2dd920055391720245c30c3579b
 
 build:
   noarch: python
