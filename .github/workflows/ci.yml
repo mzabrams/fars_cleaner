@@ -2,6 +2,10 @@ name: CI
 
 on: [push]
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
 
   test:
@@ -11,7 +15,6 @@ jobs:
         os: [ ubuntu-latest, macos-12, macos-11, windows-latest, self-hosted ]
         python-version: ['3.8', '3.9' ,'3.10']
       fail-fast: false
-      shell: bash
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
