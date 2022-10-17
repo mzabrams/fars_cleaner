@@ -92,6 +92,9 @@ from fars_cleaner.data_loader import load_basic
 vehicles, accidents, people = load_basic(year=1975, data_dir=SOME_PATH, mapping=mappings)
 ```
 
+## Requirements
+Downloading and processing the full FARS dataset currently runs out of memory on Windows machines with only 16GB RAM. It is recommended to have at least 32GB RAM on Windows systems. macOS and Linux run with no issues on 16GB systems.
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
