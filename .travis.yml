@@ -1,56 +1,9 @@
-
 language: python
-# Linux options
 dist: focal
 python:
   - "3.8"
   - "3.9"
   - "3.10"
-
-jobs:
-  include:
-    # ------------ OSX JOBS --------------------
-    - name: "Python 3.8.0 on macOS"
-      os: osx
-      osx_image: xcode11.3  # Python 3.7.4 running on macOS 10.14.4
-      language: shell       # 'language: python' is an error on Travis CI macOS
-      addons:
-        homebrew:
-          packages:
-            - python@3.8
-      before_install:
-        - python3 --version
-        - python --version
-        - python3 -m pip install --upgrade pip
-        - python3 -m pip install --upgrade codecov pytest poetry
-    # ------------ Windows JOBS --------------------
-    - name: "Python 3.8.10 on Windows"
-      os: windows           # Windows 10.0.17134 N/A Build 17134
-      language: shell       # 'language: python' is an error on Travis CI Windows
-      before_install:
-        - choco install python --version 3.8.10
-        - python -m pip install --upgrade pip
-        - python -m pip install --upgrade codecov pytest poetry
-      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
-    - name: "Python 3.9.2 on Windows"
-      os: windows           # Windows 10.0.17134 N/A Build 17134
-      language: shell       # 'language: python' is an error on Travis CI Windows
-      before_install:
-        - choco install python --version 3.9.13
-        - python --version
-        - python -m pip install --upgrade pip
-        - python -m pip install --upgrade codecov pytest poetry
-      env: PATH=/c/Python39:/c/Python39/Scripts:$PATH
-    - name: "Python 3.10.7 on Windows"
-      os: windows           # Windows 10.0.17134 N/A Build 17134
-      language: shell       # 'language: python' is an error on Travis CI Windows
-      before_install:
-        - choco install python --version 3.10.7
-        - python --version
-        - python -m pip install --upgrade pip
-        - python -m pip install --upgrade codecov pytest poetry
-      env: PATH=/c/Python310:/c/Python310/Scripts:$PATH
-
 # command to install dependencies
 before_install:
   - pip install -U pip
