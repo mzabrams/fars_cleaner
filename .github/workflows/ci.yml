@@ -14,13 +14,10 @@ jobs:
       matrix:
         os: [ ubuntu-20.04, ubuntu-22.04, macos-12, macos-11, windows-latest]
         python-version: ['3.8', '3.9' ,'3.10']
-        include:
+        exclude:
           - os: windows-latest
-            continue-on-error: true
           - os: ubuntu-20.04
-            continue-on-error: true
           - os: ubuntu-22.04
-            continue-on-error: true
       fail-fast: false
     steps:
       - uses: actions/checkout@v3

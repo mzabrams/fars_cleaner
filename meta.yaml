@@ -34,14 +34,14 @@ requirements:
   run:
     - dask-core
     - numpy
-    - pandas >= 1.4.0
+    - pandas >=1.4.0
     - pathlib
     - pooch >=1.6.0
     - pyjanitor >=0.23.1
     - python >=3.8
     - requests
     - tqdm
-    - fuzzyfinder
+    - thefuzz
 test:
   requires:
     - pip
@@ -52,7 +52,6 @@ test:
     - fars_cleaner
   commands:
     - poetry run pytest
-
 
 extra:
   recipe-maintainers:

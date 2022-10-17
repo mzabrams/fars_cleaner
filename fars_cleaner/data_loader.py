@@ -15,7 +15,7 @@ import pickle
 
 from pathlib import Path
 
-from fuzzyfinder import fuzzyfinder
+from thefuzz import process as fuzzyprocess
 
 from .builder import *
 from .builder import get_renaming
@@ -519,15 +519,19 @@ def load_basic(year, use_dask=False, data_dir=None, mapping=None, client=None):
 
 
     cur_dir_files = os.listdir(cur_year)
-    veh_suggestions = fuzzyfinder("VEHICLE.csv", cur_dir_files)
-    per_suggestions = fuzzyfinder("PERSON.csv", cur_dir_files)
-    acc_suggestions = fuzzyfinder("ACCIDENT.csv", cur_dir_files)
-    vehicle_fname = list(veh_suggestions)
-    person_fname = list(per_suggestions)
-    accident_fname = list(acc_suggestions)
-    vehicle_file = cur_year / vehicle_fname[0]
-    person_file = cur_year / person_fname[0]
-    accident_file = cur_year / accident_fname[0]
+    #veh_suggestions = fuzzyfinder("VEHICLE.csv", cur_dir_files)
+    #per_suggestions = fuzzyfinder("PERSON.csv", cur_dir_files)
+    #acc_suggestions = fuzzyfinder("ACCIDENT.csv", cur_dir_files)
+    veh_suggestions = fuzzyprocess.extractOne("VEHICLE.csv", cur_dir_files)
+    per_suggestions = fuzzyprocess.extractOne("PERSON.csv", cur_dir_files)
+    acc_suggestions = fuzzyprocess.extractOne("ACCIDENT.csv", cur_dir_files)
+    vehicle_fname = veh_suggestions[0]
+    person_fname = per_suggestions[0]
+    accident_fname = acc_suggestions[0]
+    vehicle_file = cur_year / vehicle_fname
+    person_file = cur_year / person_fname
+    accident_file = cur_year / accident_fname
+    print(vehicle_fname)
 
     acc_cols = get_renaming(mapping['Accident'], year)
     per_cols = get_renaming(mapping['Person'], year)

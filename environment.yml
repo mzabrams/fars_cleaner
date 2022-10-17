@@ -12,6 +12,5 @@ dependencies:
   - pooch >= 1.6.0
   - pathlib
   - requests
-  - pip:
-      - fuzzyfinder
-      - pyjanitor
+  - thefuzz
+  - pyjanitor

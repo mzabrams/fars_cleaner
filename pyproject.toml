@@ -21,7 +21,7 @@ dask = "*"
 distributed = "^2022"
 requests = "*"
 tqdm = "*"
-fuzzyfinder = "*"
+thefuzz = "*"
 
 pytest = {version = "^7.1.0", optional = true}
 hypothesis = {version = "*", optional = true}
