@@ -1,4 +1,6 @@
-{% set name = "fars-cleaner" %}
+#{% set pyproject = load_file_data("pyproject.toml", ) %}
+#{% set poetry = pyproject.get('tool', {}).get('poetry') %}
+{% set name = "fars_cleaner" %}
 {% set version = "1.2.0" %}
 
 package:
@@ -6,42 +8,50 @@ package:
   version: {{ version }}
 
 source:
+  path: .
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/fars_cleaner-{{ version }}.tar.gz
   sha256: a9421abf1ada4c801e82a5b84c6ceb7327ab32d61cb546dfa8ea11375811d4cf
 
 build:
   noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
+  script: poetry install #{{ PYTHON }} -m pip install . -vv
   number: 0
-
-requirements:
-  host:
-    - pip
-    - python >=3.7
-  run:
-    - dask-core
-    - numpy
-    - pandas
-    - pathlib
-    - pooch >=1.6.0
-    - pyjanitor >=0.23.1
-    - python >=3.7
-    - requests
-    - tqdm
-    - fuzzyfinder
-test:
-  imports:
-    - fars_cleaner
-  commands:
-    - pip check
-  requires:
-    - pip
 
 about:
   home: https://pypi.org/project/fars-cleaner/
   summary: A package for loading and preprocessing the NHTSA FARS crash database
   license: BSD-3-Clause
   license_file: LICENSE
+
+requirements:
+  host:
+    - pip
+    - python >=3.8
+    - poetry
+  build:
+    - python >=3.8
+    - poetry
+  run:
+    - dask-core
+    - numpy
+    - pandas >=1.4.0
+    - pathlib
+    - pooch >=1.6.0
+    - pyjanitor >=0.23.1
+    - python >=3.8
+    - requests
+    - tqdm
+    - thefuzz
+test:
+  requires:
+    - pip
+    - hypothesis
+    - pytest
+    - poetry
+  imports:
+    - fars_cleaner
+  commands:
+    - poetry run pytest
 
 extra:
   recipe-maintainers:

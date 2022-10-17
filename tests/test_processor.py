@@ -2,7 +2,7 @@ from fars_cleaner import FARSProcessor
 import fars_cleaner.extra_info as ei
 import pandas as pd
 
-from hypothesis import given
+from hypothesis import given, reproduce_failure
 from hypothesis import strategies as st
 from hypothesis.extra.pandas import column, data_frames
 
@@ -71,7 +71,6 @@ def test_fips(data):
             assert d == str(o['STATE']).zfill(2) + str(o['COUNTY']).zfill(3)
         else:
             assert pd.isna(d)
-
 
 @given(st.data())
 def test_weekday(data):

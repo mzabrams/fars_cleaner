@@ -1,19 +1,22 @@
 language: python
+dist: focal
 python:
-  - "3.7"
   - "3.8"
   - "3.9"
+  - "3.10"
 # command to install dependencies
 before_install:
   - pip install -U pip
   - pip install -U pytest
   - pip install coverage
+  - pip install poetry==1.2.1
 install:
-  - pip install -U ".[dev]"
+  #- pip install -U ".[dev]"
   #- pip install -r requirements.txt
-  - pip install coverage
+  #- pip install coverage
+  - poetry install --extras "dev"
 # command to run tests
 script:
-  - coverage run -m pytest
+  - poetry run coverage run -m pytest
 after_success:
   - bash <(curl -s https://codecov.io/bash)

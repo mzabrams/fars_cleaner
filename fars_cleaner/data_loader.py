@@ -15,7 +15,7 @@ import pickle
 
 from pathlib import Path
 
-from fuzzyfinder import fuzzyfinder
+from thefuzz import process as fuzzyprocess
 
 from .builder import *
 from .builder import get_renaming
@@ -157,10 +157,6 @@ def load_pipeline(
             people = dd.concat(lazy_people)
             vehicles = dd.concat(lazy_vehicles)
             accidents = dd.concat(lazy_accidents)
-            if debug >= 2:
-                people.visualize(filename='people.svg')
-                vehicles.visualize(filename='vehicles.svg')
-                accidents.visualize(filename='accidents.svg')
             people = people.compute()
             vehicles = vehicles.compute()
             accidents = accidents.compute()
@@ -523,15 +519,19 @@ def load_basic(year, use_dask=False, data_dir=None, mapping=None, client=None):
 
 
     cur_dir_files = os.listdir(cur_year)
-    veh_suggestions = fuzzyfinder("VEHICLE.csv", cur_dir_files)
-    per_suggestions = fuzzyfinder("PERSON.csv", cur_dir_files)
-    acc_suggestions = fuzzyfinder("ACCIDENT.csv", cur_dir_files)
-    vehicle_fname = list(veh_suggestions)
-    person_fname = list(per_suggestions)
-    accident_fname = list(acc_suggestions)
-    vehicle_file = cur_year / vehicle_fname[0]
-    person_file = cur_year / person_fname[0]
-    accident_file = cur_year / accident_fname[0]
+    #veh_suggestions = fuzzyfinder("VEHICLE.csv", cur_dir_files)
+    #per_suggestions = fuzzyfinder("PERSON.csv", cur_dir_files)
+    #acc_suggestions = fuzzyfinder("ACCIDENT.csv", cur_dir_files)
+    veh_suggestions = fuzzyprocess.extractOne("VEHICLE.csv", cur_dir_files)
+    per_suggestions = fuzzyprocess.extractOne("PERSON.csv", cur_dir_files)
+    acc_suggestions = fuzzyprocess.extractOne("ACCIDENT.csv", cur_dir_files)
+    vehicle_fname = veh_suggestions[0]
+    person_fname = per_suggestions[0]
+    accident_fname = acc_suggestions[0]
+    vehicle_file = cur_year / vehicle_fname
+    person_file = cur_year / person_fname
+    accident_file = cur_year / accident_fname
+    print(vehicle_fname)
 
     acc_cols = get_renaming(mapping['Accident'], year)
     per_cols = get_renaming(mapping['Person'], year)
@@ -599,10 +599,26 @@ def load_basic(year, use_dask=False, data_dir=None, mapping=None, client=None):
                                     }
                              ).rename(columns=veh_cols)
         per_df = pd.read_csv(person_file, encoding='cp1252',
-                             usecols=lambda x: x not in skip_per,
+                             usecols=lambda x: x not in skip_per and not x.endswith("NAME"),
                              low_memory=True).rename(columns=per_cols)
         acc_df = pd.read_csv(accident_file, encoding='cp1252',
                              usecols=lambda x: not x.endswith("NAME"),
                              low_memory=True).rename(columns=acc_cols)
 
+    if not use_dask:
+        acc_intCols = acc_df.select_dtypes('integer').columns
+        acc_floatCols = acc_df.select_dtypes('float').columns
+        acc_df[acc_intCols] = acc_df[acc_intCols].apply(pd.to_numeric, downcast='integer')
+        acc_df[acc_floatCols] = acc_df[acc_floatCols].apply(pd.to_numeric, downcast='float')
+
+        veh_intCols = veh_df.select_dtypes('integer').columns
+        veh_floatCols = veh_df.select_dtypes('float').columns
+        veh_df[veh_intCols] = veh_df[veh_intCols].apply(pd.to_numeric, downcast='integer')
+        veh_df[veh_floatCols] = veh_df[veh_floatCols].apply(pd.to_numeric, downcast='float')
+
+        per_intCols = per_df.select_dtypes('integer').columns
+        per_floatCols = per_df.select_dtypes('float').columns
+        per_df[per_intCols] = per_df[per_intCols].apply(pd.to_numeric, downcast='integer')
+        per_df[per_floatCols] = per_df[per_floatCols].apply(pd.to_numeric, downcast='float')
+	
     return veh_df, per_df, acc_df
