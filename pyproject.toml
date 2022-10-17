@@ -18,11 +18,10 @@ scipy = "^1.7.0"
 pathlib = "*"
 pyjanitor = "^0.23.1"
 dask = "*"
-distributed = "*"
+distributed = "^2022"
 requests = "*"
 tqdm = "*"
 fuzzyfinder = "*"
-tornado = "^6.2"
 
 pytest = {version = "^7.1.0", optional = true}
 hypothesis = {version = "*", optional = true}
