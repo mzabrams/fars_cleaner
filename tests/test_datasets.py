@@ -1,6 +1,8 @@
 from fars_cleaner import FARSFetcher
 import pandas as pd
 
+import pytest
+
 from hypothesis import given
 from hypothesis import strategies as st
 from hypothesis.extra.pandas import column, data_frames
