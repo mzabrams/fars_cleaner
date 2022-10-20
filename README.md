@@ -15,7 +15,7 @@ from the Fatality Analysis Reporting System, collected annually by NHTSA since
 
 The preferred installation method is through `conda`.
 ```bash
-conda install -c conda-forge fars-cleaner
+conda install -c conda-forge fars_cleaner
 ```
 You can also install with [pip](https://pip.pypa.io/en/stable/).
 
