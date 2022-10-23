@@ -49,6 +49,18 @@ and `fars_cleaner` delivers data to the user as Pandas DataFrames. Data are prep
 within the subset of years requested, converting numerical values to categorical text fields.
 This reduces the burden on researchers seeking to utilize the FARS dataset.
 
+# Statement of need
+
+The FARS dataset is in constant flux, placing a large burden on researchers seeking to conduct
+analyses of vehicle safety trends over many decades. This package simplifies the data intake
+and pre-processing process, leaving researchers with prepared pandas dataframes ready for any
+analysis with the FARS data. This package is similar in concept to the `stats-19` R package by 
+@Lovelace2019, but is developed for the US crash database.
+
+`fars_cleaner` has been used in double-pair analyses of male and female relative
+fatality risk [@ircobi2020; @WCB2022], as well as a matched study with multiple 
+cause of death data in the US [@ircobi2022]. 
+
 ## Usage
 
 ### Downloading FARS data
@@ -114,17 +126,5 @@ vehicles, accidents, people = load_pipeline(1975, 2020,
                                             first_run=True, 
                                             target_folder=target_folder)
 ```
-
-# Statement of need
-
-The FARS dataset is in constant flux, placing a large burden on researchers seeking to conduct
-analyses of vehicle safety trends over many decades. This package simplifies the data intake
-and pre-processing process, leaving researchers with prepared pandas dataframes ready for any
-analysis with the FARS data. This package is similar in concept to the `stats-19` R package by 
-@Lovelace2019, but is developed for the US crash database.
-
-`fars_cleaner` has been used in double-pair analyses of male and female relative
-fatality risk [@ircobi2020; @WCB2022], as well as a matched study with multiple 
-cause of death data in the US [@ircobi2022]. 
 
 # References
