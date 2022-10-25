@@ -1,0 +1,17 @@
+{
+  "creators": [
+    {
+      "orcid": "0000-0001-6818-5214",
+      "affiliation": "Duke University, Durham, NC, USA",
+      "name": "Abrams, Mitchell Z."
+    },
+    {
+      "affiliation": "Duke University, Durham, NC, USA",
+      "name": "Bass, Cameron R."
+    }
+  ],
+  "license": "BSD-3-Clause",
+  "title": "fars_cleaner: A Python package for downloading and pre-processing vehicle fatality data in the US",
+  "access_right": "open",
+  "upload_type": "software"
+}

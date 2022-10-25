@@ -5,7 +5,7 @@
 
 [![status](https://joss.theoj.org/papers/2ca54c6935611fe3cb0303c49a354c51/status.svg)](https://joss.theoj.org/papers/2ca54c6935611fe3cb0303c49a354c51)
 
-# FARS Cleaner `fars-cleaner`
+# FARS Cleaner `fars_cleaner`
 
 `fars-cleaner` is a Python library for downloading and pre-processing data 
 from the Fatality Analysis Reporting System, collected annually by NHTSA since

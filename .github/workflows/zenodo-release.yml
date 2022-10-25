@@ -1,0 +1,35 @@
+name: Zenodo Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: download archive to runner
+      env:
+        tarball: ${{ github.event.release.tarball_url }}
+      run: |
+        name=$(basename ${tarball})        
+        curl -L $tarball > $name
+        echo "archive=${name}" >> $GITHUB_ENV
+
+    - name: Run Zenodo Deploy
+      uses: rseng/zenodo-release@main
+      with:
+        token: ${{ secrets.ZENODO_TOKEN }}
+        version: ${{ github.event.release.tag_name }}
+        zenodo_json: .zenodo.json   # optional
+        archive: ${{ env.archive }}
+
+        # Optional DOI for all versions. Leaving this blank (the default) will create
+        # a new DOI on every release. Use a DOI that represents all versions will
+        # create a new version for this existing DOI.
+        #
+        # Newer versions have their own DOIs, but they're also linked to this DOI
+        # as a different version. When using this, use the DOI for all versions.
+        doi: '10.5281/zenodo.3735486'
