@@ -2,7 +2,7 @@ name: Zenodo Release
 
 on:
   release:
-    types: [published]
+    types: [push]
 
 jobs:
   deploy:
@@ -32,4 +32,4 @@ jobs:
         #
         # Newer versions have their own DOIs, but they're also linked to this DOI
         # as a different version. When using this, use the DOI for all versions.
-        doi: '10.5281/zenodo.3735486'
+        #doi: '10.5281/zenodo.3735486'
