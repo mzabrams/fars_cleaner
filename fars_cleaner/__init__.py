@@ -1,5 +1,5 @@
 name = 'fars_cleaner'
-__version__ = "1.2.0"
+__version__ = "1.3.5"
 
 from fars_cleaner.datasets import FARSFetcher
 from fars_cleaner.fars_processor import FARSProcessor
