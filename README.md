@@ -1,7 +1,9 @@
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/mzabrams/fars-cleaner)
 ![PyPI](https://img.shields.io/pypi/v/fars-cleaner)
+[![conda-forge](https://anaconda.org/conda-forge/fars_cleaner/badges/version.svg)](https://anaconda.org/conda-forge/fars_cleaner)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![DOI](https://zenodo.org/badge/252038452.svg)](https://zenodo.org/badge/latestdoi/252038452)
+
 
 [![status](https://joss.theoj.org/papers/2ca54c6935611fe3cb0303c49a354c51/status.svg)](https://joss.theoj.org/papers/2ca54c6935611fe3cb0303c49a354c51)
 
