@@ -1,8 +1,9 @@
 name: Zenodo Release
 
 on:
+  push:
   release:
-    types: [push]
+    types: [published]
 
 jobs:
   deploy:
