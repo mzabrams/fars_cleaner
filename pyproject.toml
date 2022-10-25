@@ -28,7 +28,7 @@ hypothesis = {version = "*", optional = true}
 
 [tool.poetry]
 name = "fars_cleaner"
-version = "1.3.3"
+version = "1.3.5"
 authors= [
     "Mitchell Abrams <mitchell.abrams@duke.edu>",
 ]
