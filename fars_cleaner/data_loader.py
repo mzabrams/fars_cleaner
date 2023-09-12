@@ -28,7 +28,7 @@ from fars_cleaner import FARSFetcher
 
 def load_pipeline(
         start_year=1975,
-        end_year=2020,
+        end_year=2021,
         first_run=True,
         target_folder=None,
         load_from=None,
@@ -190,7 +190,7 @@ def load_pipeline(
         acc = pd.read_pickle(load_path / "accidents.pkl.xz")
         per = pd.read_pickle(load_path / "people.pkl.xz")
 
-        if start_year > 1975 or end_year < 2018:
+        if start_year > 1975 or end_year < 2021:
             veh = veh.query(f"YEAR >= {start_year} and YEAR <= {end_year}").reset_index()
             acc = veh.query(f"YEAR >= {start_year} and YEAR <= {end_year}").reset_index()
             per = per.query(f"YEAR >= {start_year} and YEAR <= {end_year}").reset_index()
