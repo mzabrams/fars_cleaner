@@ -43,6 +43,7 @@
 2017.zip 1a886757b7bf611c883cc9039e0f3cf1915142dcb0e31fcbaa14c96aab2385c4 https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2017/National/FARS2017NationalCSV.zip
 2018.zip bd0c5473e3f0eaf44c3236000225e5ca90070884684d1b69036062b2ddbdaf2e https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2018/National/FARS2018NationalCSV.zip
 2019.zip 0974abb92cfb04fa022631a838a3f46555025f2b011ee78ecad15bcf86c60f31 https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2019/National/FARS2019NationalCSV.zip
-2020.zip 1b78228e4cd81a2833e04021995f6f17d8a1a3d04b59fb16e280f9fe51b0d920 https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2020/National/FARS2020NationalCSV.zip
-2021.zip 545c86e277846f1dbffb77feb585784c12f66129db329b00bce82e9b16bdb90b https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2021/National/FARS2021NationalCSV.zip
+2020.zip b17103dbdaf7f6066f4290908f3469f2933bb9cc2a4cc669c94807010dfcfb89 https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2020/National/FARS2020NationalCSV.zip
+2021.zip 9f5305a412eb5cc1a83c215471f6ee412fbcb2401150de739d6c85e45ad0fc03 https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2021/National/FARS2021NationalCSV.zip
+2022.zip 03a6c87cf24c2b01d946526759f8d9f7229eab5e91d89610cf11aca833787537 https://www.nhtsa.gov/file-downloads/download?p=nhtsa/downloads/FARS/2022/National/FARS2022NationalCSV.zip
 mapping.dict d0ff01e2075da995ad5f57941c33a2d8af852b4c550ec702fdd5af4ffcaaff0f https://github.com/mzabrams/fars-cleaner/raw/master/fars_cleaner/lookup_tables/mapping.dict
